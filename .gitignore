@@ -1,0 +1,22 @@
+# .NET Core / C# Ignores
+[Bb]in/
+[Oo]bj/
+[Pp]ublish/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+appsettings.Development.json
+tracker.db
+tracker.db-journal
+
+# Angular & Frontend Ignores
+**/node_modules/
+dist/
+.angular/
+.vscode/
+.idea/
+
+# Local OS files
+.DS_Store
+Thumbs.db
