@@ -12,8 +12,8 @@ using Tracker.Api.Data;
 namespace Tracker.api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260716105200_InitialPostgreMigration")]
-    partial class InitialPostgreMigration
+    [Migration("20260716113859_InitialPostgresMigration")]
+    partial class InitialPostgresMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
