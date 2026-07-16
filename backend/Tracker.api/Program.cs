@@ -24,11 +24,30 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularDev", policy =>
     {
-        // Read allowed origins from configuration
-        var origins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-            ?? new[] {"http://localhost:4200"};
+        // Robust CORS origin parsing (handles both single strings and arrays)
+        var originsList = new List<string>();
+        var originsSection = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
         
-        policy.WithOrigins(origins)
+        if (originsSection != null)
+        {
+            originsList.AddRange(originsSection);
+        }
+        else
+        {
+            var singleOrigin = builder.Configuration["AllowedOrigins"];
+            if (!string.IsNullOrEmpty(singleOrigin))
+            {
+                originsList.Add(singleOrigin);
+            }
+        }
+        
+        if (originsList.Count == 0)
+        {
+            originsList.Add("http://localhost:4200");
+        }
+        // Clean up: trim trailing slashes (e.g. "domain.com/" -> "domain.com")
+        var cleanedOrigins = originsList.Select(o => o.TrimEnd('/')).ToArray();
+        policy.WithOrigins(cleanedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
