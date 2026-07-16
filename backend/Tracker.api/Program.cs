@@ -39,7 +39,22 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
-.AddCookie()
+.AddCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    
+    if (builder.Environment.IsDevelopment())
+    {
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    }
+    else
+    {
+        // Required for cross-site cookies between Vercel and Railway
+        options.Cookie.SameSite = SameSiteMode.None;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    }
+})
 .AddDiscord(options =>
 {
     options.ClientId = builder.Configuration["Discord:ClientId"]!;
