@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Tracker.Api.Features;
+using System.Security.Claims;
 
 namespace Tracker.Api.Controllers;
 
@@ -27,7 +28,8 @@ public class PlayerController : ControllerBase
     {
         try
         {
-            var command = new LinkRiotIdCommand(request.DiscordId, request.RiotName, request.RiotTag);
+            var requesterDiscordId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            var command = new LinkRiotIdCommand(requesterDiscordId, request.DiscordId, request.RiotName, request.RiotTag);
             var result = await _mediator.Send(command);
             
             return Ok(result);
@@ -36,9 +38,21 @@ public class PlayerController : ControllerBase
         {
             return NotFound(ex.Message);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
 }

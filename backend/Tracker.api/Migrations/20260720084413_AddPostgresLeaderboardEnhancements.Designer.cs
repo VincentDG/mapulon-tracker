@@ -12,8 +12,8 @@ using Tracker.Api.Data;
 namespace Tracker.api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260716113859_InitialPostgresMigration")]
-    partial class InitialPostgresMigration
+    [Migration("20260720084413_AddPostgresLeaderboardEnhancements")]
+    partial class AddPostgresLeaderboardEnhancements
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,6 +33,9 @@ namespace Tracker.api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<double>("AVP")
+                        .HasColumnType("double precision");
+
                     b.Property<int>("CurrentLP")
                         .HasColumnType("integer");
 
@@ -44,6 +47,14 @@ namespace Tracker.api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("DiscordAvatarHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DiscordGlobalName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("DiscordId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -52,8 +63,17 @@ namespace Tracker.api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("GamesPlayed")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("HasHitMasterThisSet")
                         .HasColumnType("boolean");
+
+                    b.Property<bool>("IsOptedIn")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ProfileIconId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("RiotName")
                         .IsRequired()
@@ -73,6 +93,37 @@ namespace Tracker.api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("Tracker.Api.Models.TftMatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("MatchEndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MatchId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Placement")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PlayerPuuid")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("PlayerPuuid");
+
+                    b.ToTable("Matches");
                 });
 #pragma warning restore 612, 618
         }

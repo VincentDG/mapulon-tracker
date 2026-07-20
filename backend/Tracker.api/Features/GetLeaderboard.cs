@@ -8,8 +8,14 @@ public record GetLeaderboardQuery : IRequest<List<LeaderboardPlayerDto>>;
 
 public record LeaderboardPlayerDto(
     string DiscordUsername,
+    string DiscordGlobalName,
+    string DiscordAvatarHash,
+    string DiscordId,
     string RiotName,
     string RiotTag,
+    int ProfileIconId,
+    int GamesPlayed,
+    double AVP,
     string CurrentTier,
     string CurrentRank,
     int CurrentLP
@@ -26,21 +32,27 @@ public class GetLeaderboardQueryHandler : IRequestHandler<GetLeaderboardQuery, L
 
     public async Task<List<LeaderboardPlayerDto>> Handle(GetLeaderboardQuery request, CancellationToken cancellationToken)
     {
-        // 1. Fetch all players who have linked a Riot account
+        // Fetch only players who have opted in and have valid ranked data
         var players = await _context.Players
-            .Where(p => !string.IsNullOrEmpty(p.CurrentTier) && !string.IsNullOrEmpty(p.CurrentRank))
+            .Where(p => p.IsOptedIn && !string.IsNullOrEmpty(p.CurrentTier) && !string.IsNullOrEmpty(p.CurrentRank))
             .OrderByDescending(p => p.CurrentLP)
             .Select(p => new LeaderboardPlayerDto(
                 p.DiscordUsername,
+                p.DiscordGlobalName,
+                p.DiscordAvatarHash,
+                p.DiscordId,
                 p.RiotName,
                 p.RiotTag,
+                p.ProfileIconId,
+                p.GamesPlayed,
+                p.AVP,
                 p.CurrentTier,
                 p.CurrentRank,
                 p.CurrentLP
             ))
             .ToListAsync(cancellationToken);
         
-        // 2. Sort players in-memory based on TFT rank
+        // Sort players in-memory based on TFT rank
         var sortedLeaderboard = players
             .OrderByDescending(p => GetTierValue(p.CurrentTier))
             .ThenByDescending(p => GetRankValue(p.CurrentRank))
@@ -67,10 +79,10 @@ public class GetLeaderboardQueryHandler : IRequestHandler<GetLeaderboardQuery, L
 
     private static int GetRankValue(string rank) => rank.ToUpper() switch
     {
-        "I" => 1,
-        "II" => 2,
-        "III" => 3,
-        "IV" => 4,
+        "I" => 4,
+        "II" => 3,
+        "III" => 2,
+        "IV" => 1,
         _ => 0
     };
 }

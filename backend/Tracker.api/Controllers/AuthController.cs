@@ -45,6 +45,8 @@ public class AuthController : ControllerBase
 
         var discordId = claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         var discordUsername = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "Unknown User";
+        var discordAvatarHash = claims?.FirstOrDefault(c => c.Type == "urn:discord:avatar:hash")?.Value ?? string.Empty;
+        var discordGlobalName = claims?.FirstOrDefault(c => c.Type == "urn:discord:globalname")?.Value ?? discordUsername;
 
         if (string.IsNullOrEmpty(discordId))
         {
@@ -60,16 +62,32 @@ public class AuthController : ControllerBase
             {
                 DiscordId = discordId,
                 DiscordUsername = discordUsername,
+                DiscordAvatarHash = discordAvatarHash,
+                DiscordGlobalName = discordGlobalName,
                 RiotName = "",
                 RiotTag = "",
                 RiotPuuid = "",
-                CurrentTier = "UNRANKED"
+                CurrentTier = "UNRANKED",
+                CurrentRank = "IV",
+                CurrentLP = 0,
+                HasHitMasterThisSet = false,
+                TimestampHitMaster = null,
+                IsOptedIn = false,
+                GamesPlayed = 0,
+                AVP = 0.0
             };
 
             _context.Players.Add(newPlayer);
-            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            existingPlayer.DiscordUsername = discordUsername;
+            existingPlayer.DiscordAvatarHash = discordAvatarHash;
+            existingPlayer.DiscordGlobalName = discordGlobalName;
         }
 
+        await _context.SaveChangesAsync();
+        
         var frontendUrl = _configuration["RedirectUrls:Frontend"] ?? "http://localhost:4200";
         return Redirect(frontendUrl);
     }
@@ -96,12 +114,47 @@ public class AuthController : ControllerBase
         {
             player.DiscordId,
             player.DiscordUsername,
+            player.DiscordAvatarHash,
+            player.DiscordGlobalName,
             player.RiotName,
             player.RiotTag,
+            player.ProfileIconId,
             player.CurrentTier,
             player.CurrentRank,
-            player.CurrentLP
+            player.CurrentLP,
+            player.IsOptedIn,
+            player.GamesPlayed,
+            player.AVP
         });
+    }
+
+    [HttpPost("opt-in")]
+    public async Task<IActionResult> OptIn()
+    {
+        if (User.Identity == null || !User.Identity.IsAuthenticated)
+        {
+            return Unauthorized("Not logged in.");
+        }
+        var claims = User.Identities.FirstOrDefault()?.Claims;
+        var discordId = claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(discordId))
+        {
+            return Unauthorized("Discord ID claim missing.");
+        }
+        
+        var player = await _context.Players.FirstOrDefaultAsync(p => p.DiscordId == discordId);
+        if (player == null)
+        {
+            return NotFound("Player profile not found in database.");
+        }
+        
+        if (string.IsNullOrEmpty(player.RiotPuuid))
+        {
+            return BadRequest("You must link a Riot ID before opting into the leaderboard.");
+        }
+        player.IsOptedIn = true;
+        await _context.SaveChangesAsync();
+        return Ok(new { Message = "Successfully opted into the leaderboard!" });
     }
 
     [HttpPost("logout")]

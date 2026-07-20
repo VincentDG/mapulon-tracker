@@ -81,6 +81,9 @@ builder.Services.AddAuthentication(options =>
 
     options.Scope.Add("identify");
 
+    options.ClaimActions.MapJsonKey("urn:discord:avatar:hash", "avatar");
+    options.ClaimActions.MapJsonKey("urn:discord:globalname", "global_name");
+
     options.CallbackPath = new PathString("/signin-discord");
 });
 
