@@ -102,8 +102,8 @@ public class RankUpdateWorker : BackgroundService
             // Pause briefly to respect Riot's rate limits
             await Task.Delay(300, stoppingToken); 
 
-            // 3. Sync Match Cache & Calculate AVP
-            var matchIds = await riotService.GetTftMatchIdsAsync(player.RiotPuuid, setStartTimestamp, count: 200, "asia");
+// 3. Sync Match Cache & Calculate AVP (Riot limit is 100 count)
+            var matchIds = await riotService.GetTftMatchIdsAsync(player.RiotPuuid, setStartTimestamp, count: 100, "sea");
             if (matchIds != null && matchIds.Count > 0)
             {
                 // Fetch already cached match IDs for this player PUUID
@@ -116,7 +116,7 @@ public class RankUpdateWorker : BackgroundService
                 _logger.LogInformation($"Player has {newMatchIds.Count} new matches to download.");
                 foreach (var newMatchId in newMatchIds)
                 {
-                    var matchDetails = await riotService.GetTftMatchDetailsAsync(newMatchId, "asia");
+                    var matchDetails = await riotService.GetTftMatchDetailsAsync(newMatchId, "sea");
                     if (matchDetails != null)
                     {
                         var participant = matchDetails.Info.Participants.FirstOrDefault(p => p.Puuid == player.RiotPuuid);

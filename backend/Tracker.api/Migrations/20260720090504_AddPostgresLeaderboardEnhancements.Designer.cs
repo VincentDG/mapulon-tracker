@@ -12,7 +12,7 @@ using Tracker.Api.Data;
 namespace Tracker.api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260720084413_AddPostgresLeaderboardEnhancements")]
+    [Migration("20260720090504_AddPostgresLeaderboardEnhancements")]
     partial class AddPostgresLeaderboardEnhancements
     {
         /// <inheritdoc />

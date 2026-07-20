@@ -32,10 +32,9 @@ public class GetLeaderboardQueryHandler : IRequestHandler<GetLeaderboardQuery, L
 
     public async Task<List<LeaderboardPlayerDto>> Handle(GetLeaderboardQuery request, CancellationToken cancellationToken)
     {
-        // Fetch only players who have opted in and have valid ranked data
+        // Fetch all opted-in players who have linked a Riot account
         var players = await _context.Players
-            .Where(p => p.IsOptedIn && !string.IsNullOrEmpty(p.CurrentTier) && !string.IsNullOrEmpty(p.CurrentRank))
-            .OrderByDescending(p => p.CurrentLP)
+            .Where(p => p.IsOptedIn && !string.IsNullOrEmpty(p.RiotPuuid))
             .Select(p => new LeaderboardPlayerDto(
                 p.DiscordUsername,
                 p.DiscordGlobalName,
@@ -58,7 +57,6 @@ public class GetLeaderboardQueryHandler : IRequestHandler<GetLeaderboardQuery, L
             .ThenByDescending(p => GetRankValue(p.CurrentRank))
             .ThenByDescending(p => p.CurrentLP)
             .ToList();  
-
         return sortedLeaderboard;
     }
 

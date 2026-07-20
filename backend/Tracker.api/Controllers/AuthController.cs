@@ -110,6 +110,9 @@ public class AuthController : ControllerBase
         {
             return NotFound("Player profile not found in database.");
         }
+        // Determine if current player is an administrator
+        var adminIds = _configuration.GetSection("Admins:DiscordIds").Get<string[]>() ?? Array.Empty<string>();
+        bool isAdmin = adminIds.Contains(player.DiscordId);
         return Ok(new
         {
             player.DiscordId,
@@ -124,7 +127,8 @@ public class AuthController : ControllerBase
             player.CurrentLP,
             player.IsOptedIn,
             player.GamesPlayed,
-            player.AVP
+            player.AVP,
+            IsAdmin = isAdmin // Expose to client
         });
     }
 
