@@ -113,14 +113,31 @@ var app = builder.Build();
 // Custom middleware to resolve multi-hop proxy headers (Vercel -> Railway)
 app.Use((context, next) =>
 {
+    // 1. Clean up X-Forwarded-Host (grabs the first host e.g. Vercel)
     if (context.Request.Headers.TryGetValue("X-Forwarded-Host", out var forwardedHost))
     {
-        // Extract the original host (Vercel) from the comma-separated list
         var firstHost = forwardedHost.ToString().Split(',').FirstOrDefault()?.Trim();
         if (!string.IsNullOrEmpty(firstHost))
         {
             context.Request.Headers["X-Forwarded-Host"] = firstHost;
         }
+    }
+    // 2. Clean up X-Forwarded-Proto (grabs the first proto e.g. https)
+    if (context.Request.Headers.TryGetValue("X-Forwarded-Proto", out var forwardedProto))
+    {
+        var firstProto = forwardedProto.ToString().Split(',').FirstOrDefault()?.Trim();
+        if (!string.IsNullOrEmpty(firstProto))
+        {
+            context.Request.Headers["X-Forwarded-Proto"] = firstProto;
+        }
+    }
+    // 3. Log cookies on sign-in attempt to help us trace
+    if (context.Request.Path.Value?.Contains("/signin-discord") == true)
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        var cookieNames = string.Join(", ", context.Request.Cookies.Keys);
+        logger.LogInformation("🔑 OAuth Callback. Scheme: {Scheme}, Host: {Host}, Cookies: [{Cookies}]", 
+            context.Request.Scheme, context.Request.Host, cookieNames);
     }
     return next();
 });
