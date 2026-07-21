@@ -84,18 +84,11 @@ builder.Services.AddAuthentication(options =>
     options.ClaimActions.MapJsonKey("urn:discord:globalname", "global_name");
     options.CallbackPath = new PathString("/signin-discord");
     options.CorrelationCookie.HttpOnly = true;
-    if (builder.Environment.IsDevelopment())
-    {
-        // Allowed locally on non-secure HTTP localhost
-        options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    }
-    else
-    {
-        // Enforced for production cross-site HTTPS proxies
-        options.CorrelationCookie.SameSite = SameSiteMode.None;
-        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-    }
+    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+    options.CorrelationCookie.SecurePolicy = builder.Environment.IsDevelopment() 
+        ? CookieSecurePolicy.SameAsRequest 
+        : CookieSecurePolicy.Always;
+
 });
 
 builder.Services.AddControllers();
