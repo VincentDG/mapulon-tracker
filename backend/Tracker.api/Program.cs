@@ -17,6 +17,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
+    options.ForwardLimit = null; // Add this line to allow multi-hop proxy headers (Vercel -> Railway)
 });
 
 
