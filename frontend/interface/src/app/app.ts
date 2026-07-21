@@ -1,6 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../environments/environment';
@@ -8,18 +7,30 @@ import { environment } from '../environments/environment';
 interface PlayerDto {
   discordId: string;
   discordUsername: string;
+  discordAvatarHash: string;
+  discordGlobalName: string;
   riotName: string;
   riotTag: string;
+  profileIconId: number;
+  isOptedIn: boolean;
+  gamesPlayed: number;
+  avp: number;
   currentTier: string;
   currentRank: string;
   currentLP: number;
+  isAdmin: boolean;
 }
 
 interface LeaderboardEntry {
   discordUsername: string;
+  discordGlobalName: string;
+  discordAvatarHash: string;
+  discordId: string;
   riotName: string;
   riotTag: string;
-  rankIcon: string;
+  profileIconId: number;
+  gamesPlayed: number;
+  avp: number;
   currentTier: string;
   currentRank: string;
   currentLP: number;
@@ -101,6 +112,26 @@ export class App implements OnInit {
     });
   }
 
+  optIn() {
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.http.post<{ message: string }>(`${this.apiUrl}/auth/opt-in`, {}, { withCredentials: true }).subscribe({
+      next: (res) => {
+        this.isSubmitting.set(false);
+        this.successMessage.set(res.message || 'Successfully entered the leaderboard!');
+        this.fetchCurrentUser();
+        this.fetchLeaderboard();
+        setTimeout(() => this.successMessage.set(null), 5000);
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set(err.error || 'Failed to opt into the leaderboard.');
+      }
+    });
+  }
+
   linkRiotId() {
     if (!this.riotName || !this.riotTag) {
       this.errorMessage.set('Riot Name and Tag Line are required.');
@@ -138,6 +169,22 @@ export class App implements OnInit {
         this.errorMessage.set(err.error?.message || 'Failed to link Riot ID.');
       }
     });
+  }
+
+  // Returns the Discord Avatar image URL, falling back to a default Discord colored avatar if empty
+  getDiscordAvatar(discordId: string, avatarHash: string): string {
+    if (!avatarHash) {
+      const index = (BigInt(discordId) % 5n).toString();
+      return `https://cdn.discordapp.com/embed/avatars/${index}.png`;
+    }
+    return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png`;
+  }
+  // Returns the Riot Games Summoner Profile Icon URL
+  getRiotSummonerIcon(iconId: number): string {
+    if (!iconId) {
+      return 'https://ddragon.leagueoflegends.com/cdn/14.13.1/img/profileicon/29.png'; // Default helmet summoner icon
+    }
+    return `https://ddragon.leagueoflegends.com/cdn/14.13.1/img/profileicon/${iconId}.png`;
   }
 }
 

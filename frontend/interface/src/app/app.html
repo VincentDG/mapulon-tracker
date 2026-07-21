@@ -11,18 +11,11 @@
       <div class="skeleton-loader user-skeleton"></div>
       } @else if (currentUser()) {
       <div class="user-card">
-        <div class="discord-avatar">
-          {{ currentUser()?.discordUsername?.substring(0, 2) | uppercase }}
-        </div>
+        <img class="discord-avatar-img"
+          [src]="getDiscordAvatar(currentUser()!.discordId, currentUser()!.discordAvatarHash)" alt="Avatar" />
         <div class="user-details">
-          <span class="user-name">{{ currentUser()?.discordUsername }}</span>
-          <span class="user-tag">
-            @if (currentUser()?.riotName) {
-            {{ currentUser()?.riotName }}#{{ currentUser()?.riotTag }}
-            } @else {
-            Riot ID unlinked
-            }
-          </span>
+          <span class="user-name">{{ currentUser()?.discordGlobalName }}</span>
+          <span class="user-handle">@{{ currentUser()?.discordUsername }}</span>
         </div>
         <button class="btn btn-outline" (click)="logout()">Logout</button>
       </div>
@@ -37,6 +30,7 @@
       }
     </div>
   </header>
+
   <!-- Main Content -->
   <main class="dashboard-grid">
     <!-- Left Column: Leaderboard -->
@@ -63,8 +57,10 @@
             <thead>
               <tr>
                 <th class="col-rank">#</th>
-                <th class="col-player">Player</th>
+                <th class="col-player">Discord Username</th>
                 <th class="col-riot">Riot ID</th>
+                <th class="col-games">Games</th>
+                <th class="col-avp">AVP</th>
                 <th class="col-tier">TFT Rank</th>
                 <th class="col-lp">Points</th>
               </tr>
@@ -78,17 +74,29 @@
                   </span>
                 </td>
                 <td class="col-player">
-                  <div class="player-info">
-                    <span class="discord-username">{{ entry.discordUsername }}</span>
+                  <div class="player-info-container">
+                    <img class="table-discord-avatar" [src]="getDiscordAvatar(entry.discordId, entry.discordAvatarHash)"
+                      alt="Discord" title="Discord Avatar" />
+                    <div class="player-names">
+                      <span class="discord-global-name">{{ entry.discordGlobalName }}</span>
+                      <span class="discord-username-sub">@{{ entry.discordUsername }}</span>
+                    </div>
                   </div>
                 </td>
                 <td class="col-riot">
-                  @if (entry.riotName) {
-                  <span class="riot-id-tag">{{ entry.riotName }}<span class="riot-tagline">#{{ entry.riotTag
-                      }}</span></span>
-                  } @else {
-                  <span class="unlinked-text">Unlinked Profile</span>
-                  }
+                  <div class="riot-info-container">
+                    <img class="table-summoner-icon" [src]="getRiotSummonerIcon(entry.profileIconId)"
+                      alt="Riot Summoner" title="Riot Profile Icon" />
+                    <span class="riot-id-tag">
+                      {{ entry.riotName }}<span class="riot-tagline">#{{ entry.riotTag }}</span>
+                    </span>
+                  </div>
+                </td>
+                <td class="col-games">
+                  <span class="stat-value">{{ entry.gamesPlayed }}</span>
+                </td>
+                <td class="col-avp">
+                  <span class="stat-value">{{ entry.avp > 0 ? entry.avp : '--' }}</span>
                 </td>
                 <td class="col-tier">
                   <span class="tier-badge" [class]="entry.currentTier.toLowerCase()">
@@ -106,12 +114,14 @@
         }
       </div>
     </section>
+
     <!-- Right Column: Settings & Link -->
     <section class="grid-section control-section">
       <div class="section-header">
         <h2 class="section-title">⚙️ Tracking Control</h2>
         <span class="section-subtitle">Link your Riot ID to begin tracking</span>
       </div>
+
       <!-- Form Card -->
       <div class="card control-card">
         @if (isLoadingUser()) {
@@ -123,13 +133,17 @@
         </div>
         } @else if (currentUser()) {
         <div class="link-riot-section">
+          <!-- Session Header -->
           <div class="status-summary">
             <span class="status-label">Discord Session</span>
             <div class="status-value active">Connected</div>
           </div>
+
+          <!-- Profile Badge -->
           @if (currentUser()?.riotName) {
           <div class="linked-badge-card">
-            <div class="linked-icon">✨</div>
+            <img class="summoner-card-icon" [src]="getRiotSummonerIcon(currentUser()!.profileIconId)"
+              alt="Summoner Icon" />
             <div class="linked-details">
               <h3>Linked Riot Account</h3>
               <p class="riot-full-name">{{ currentUser()?.riotName }}#{{ currentUser()?.riotTag }}</p>
@@ -137,11 +151,42 @@
                 currentUser()?.currentLP }} LP</p>
             </div>
           </div>
+
+          <!-- Leaderboard Opt-In Prompt -->
+          @if (!currentUser()?.isOptedIn) {
+          <div class="opt-in-prompt-card">
+            <div class="opt-in-header">
+              <span class="opt-in-badge">COMPETE</span>
+              <h3>Enter the Leaderboard</h3>
+            </div>
+            <p>Your account is linked but you are not yet competing. Opt-in to appear on the server leaderboard and
+              track your statistics!</p>
+            <button class="btn btn-primary btn-full" (click)="optIn()" [disabled]="isSubmitting()">
+              {{ isSubmitting() ? 'Opting In...' : 'Opt-In & Join Leaderboard' }}
+            </button>
+          </div>
+          } @else {
+          <!-- Lock Notice -->
+          <div class="lock-notice-card">
+            <div class="lock-details">
+              <span class="lock-icon">🔒</span>
+              <div>
+                <h4>Riot ID Locked</h4>
+                <p>You have opted into the leaderboard. Your Riot ID cannot be changed. Contact an admin if you need
+                  updates.</p>
+              </div>
+            </div>
+          </div>
           }
+          }
+
+          <!-- Link Form (Disabled for normal opted-in users) -->
+          @if (!currentUser()?.isOptedIn || currentUser()?.isAdmin) {
           <h3 class="form-title">
             {{ currentUser()?.riotName ? 'Update Linked Riot ID' : 'Link Your Riot Account' }}
           </h3>
           <p class="form-desc">Entering your Riot ID updates your PUUID to retrieve stats from platform servers.</p>
+
           <form (ngSubmit)="linkRiotId()" class="riot-form">
             <div class="form-group">
               <label for="riotName">Riot Game Name</label>
@@ -163,13 +208,11 @@
             </div>
             }
             <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || !riotName || !riotTag">
-              @if (isSubmitting()) {
-              Syncing Account...
-              } @else {
-              {{ currentUser()?.riotName ? 'Update Riot Link' : 'Register & Sync Stats' }}
-              }
+              {{ isSubmitting() ? 'Syncing Account...' : (currentUser()?.riotName ? 'Update Riot Link' : 'Register &
+              Sync Stats') }}
             </button>
           </form>
+          }
         </div>
         } @else {
         <div class="auth-promo">
@@ -180,13 +223,14 @@
         </div>
         }
       </div>
+
       <!-- Rules Guide Card -->
       <div class="card faq-card">
-        <h3>💡 Quick Information</h3>
+        <h3>💡 Leaderboard Rules</h3>
         <ul class="faq-list">
-          <li>Ensure your Riot ID spelling is correct (e.g. taglines do not contain # symbol).</li>
-          <li>Ranks are fetched directly using live platform queries.</li>
-          <li>Ranks sync dynamically, and update automatically every 30 minutes in the background.</li>
+          <li>Linking your Riot ID is required to fetch summoner data.</li>
+          <li>Once you opt in, your Riot ID is **locked** and cannot be self-modified.</li>
+          <li>Your placement AVP (Average Placement) is calculated across **all games in the current set**.</li>
         </ul>
       </div>
     </section>

@@ -712,3 +712,154 @@
         background-position: -200% 0;
     }
 }
+
+/* User Profile Header Avatars */
+.discord-avatar-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    object-fit: cover;
+}
+
+.user-handle {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Inline Flex Layout for Table Columns */
+.player-info-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.riot-info-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.table-discord-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    object-fit: cover;
+}
+
+.table-summoner-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    object-fit: cover;
+}
+
+/* Table columns text styling */
+.player-names {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.discord-global-name {
+    font-weight: 500;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.discord-username-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.stat-value {
+    font-family: monospace;
+    font-size: 14px;
+    color: var(--text);
+}
+
+/* summoner details layout card */
+.summoner-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.linked-badge-card {
+    display: flex;
+    gap: 16px;
+    background-color: var(--bg-hover);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+/* Leaderboard Opt-In Prompt Card */
+.opt-in-prompt-card {
+    background: linear-gradient(135deg, rgba(82, 102, 224, 0.1) 0%, rgba(132, 94, 194, 0.1) 100%);
+    border: 1px solid rgba(82, 102, 224, 0.3);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.opt-in-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.opt-in-badge {
+    background-color: var(--primary);
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.opt-in-prompt-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+/* Riot ID Locked Notice */
+.lock-notice-card {
+    background-color: rgba(239, 83, 80, 0.05);
+    border: 1px solid rgba(239, 83, 80, 0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+}
+
+.lock-details {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.lock-icon {
+    font-size: 20px;
+    margin-top: 2px;
+}
+
+.lock-details h4 {
+    font-size: 14px;
+    color: #ef5350;
+    margin: 0 0 4px 0;
+}
+
+.lock-details p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
