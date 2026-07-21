@@ -83,8 +83,18 @@ builder.Services.AddAuthentication(options =>
     options.ClaimActions.MapJsonKey("urn:discord:globalname", "global_name");
     options.CallbackPath = new PathString("/signin-discord");
     options.CorrelationCookie.HttpOnly = true;
-    options.CorrelationCookie.SameSite = SameSiteMode.None;
-    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    if (builder.Environment.IsDevelopment())
+    {
+        // Allowed locally on non-secure HTTP localhost
+        options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    }
+    else
+    {
+        // Enforced for production cross-site HTTPS proxies
+        options.CorrelationCookie.SameSite = SameSiteMode.None;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    }
 });
 
 builder.Services.AddControllers();
@@ -99,6 +109,21 @@ builder.Services.AddHostedService<RankUpdateWorker>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 var app = builder.Build();
+
+// Custom middleware to resolve multi-hop proxy headers (Vercel -> Railway)
+app.Use((context, next) =>
+{
+    if (context.Request.Headers.TryGetValue("X-Forwarded-Host", out var forwardedHost))
+    {
+        // Extract the original host (Vercel) from the comma-separated list
+        var firstHost = forwardedHost.ToString().Split(',').FirstOrDefault()?.Trim();
+        if (!string.IsNullOrEmpty(firstHost))
+        {
+            context.Request.Headers["X-Forwarded-Host"] = firstHost;
+        }
+    }
+    return next();
+});
 
 app.UseForwardedHeaders();
 
