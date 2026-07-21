@@ -132,13 +132,12 @@ app.Use((context, next) =>
             context.Request.Headers["X-Forwarded-Proto"] = firstProto;
         }
     }
-    // 3. Log cookies on sign-in attempt to help us trace
+    // 3. LOG ALL INCOMING HEADERS for /signin-discord to inspect
     if (context.Request.Path.Value?.Contains("/signin-discord") == true)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-        var cookieNames = string.Join(", ", context.Request.Cookies.Keys);
-        logger.LogInformation("🔑 OAuth Callback. Scheme: {Scheme}, Host: {Host}, Cookies: [{Cookies}]", 
-            context.Request.Scheme, context.Request.Host, cookieNames);
+        var headersList = string.Join(" | ", context.Request.Headers.Select(h => $"{h.Key}={h.Value}"));
+        logger.LogInformation("🔑 OAuth Callback RAW HEADERS: {Headers}", headersList);
     }
     return next();
 });
