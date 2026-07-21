@@ -114,7 +114,20 @@ var app = builder.Build();
 // Custom middleware to resolve multi-hop proxy headers (Vercel -> Railway)
 app.Use((context, next) =>
 {
-    // 1. Clean up X-Forwarded-Host (grabs the first host e.g. Vercel)
+    var config = context.RequestServices.GetRequiredService<IConfiguration>();
+    var frontendUrl = config["RedirectUrls:Frontend"];
+    if (!string.IsNullOrEmpty(frontendUrl) && !frontendUrl.Contains("localhost"))
+    {
+        var frontendUri = new Uri(frontendUrl);
+        
+        // If the request is hitting the raw Railway backend domain, force the host to Vercel
+        if (context.Request.Host.Host == "mapulon-tracker-production.up.railway.app")
+        {
+            context.Request.Host = new HostString(frontendUri.Host);
+            context.Request.Scheme = "https";
+        }
+    }
+    // Clean up standard headers just in case
     if (context.Request.Headers.TryGetValue("X-Forwarded-Host", out var forwardedHost))
     {
         var firstHost = forwardedHost.ToString().Split(',').FirstOrDefault()?.Trim();
@@ -123,7 +136,6 @@ app.Use((context, next) =>
             context.Request.Headers["X-Forwarded-Host"] = firstHost;
         }
     }
-    // 2. Clean up X-Forwarded-Proto (grabs the first proto e.g. https)
     if (context.Request.Headers.TryGetValue("X-Forwarded-Proto", out var forwardedProto))
     {
         var firstProto = forwardedProto.ToString().Split(',').FirstOrDefault()?.Trim();
@@ -131,13 +143,6 @@ app.Use((context, next) =>
         {
             context.Request.Headers["X-Forwarded-Proto"] = firstProto;
         }
-    }
-    // 3. LOG ALL INCOMING HEADERS for /signin-discord to inspect
-    if (context.Request.Path.Value?.Contains("/signin-discord") == true)
-    {
-        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-        var headersList = string.Join(" | ", context.Request.Headers.Select(h => $"{h.Key}={h.Value}"));
-        logger.LogInformation("🔑 OAuth Callback RAW HEADERS: {Headers}", headersList);
     }
     return next();
 });
