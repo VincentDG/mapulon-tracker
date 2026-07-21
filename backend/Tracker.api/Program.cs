@@ -14,7 +14,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
@@ -78,13 +78,13 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = builder.Configuration["Discord:ClientId"]!;
     options.ClientSecret = builder.Configuration["Discord:ClientSecret"]!;
-
     options.Scope.Add("identify");
-
     options.ClaimActions.MapJsonKey("urn:discord:avatar:hash", "avatar");
     options.ClaimActions.MapJsonKey("urn:discord:globalname", "global_name");
-
     options.CallbackPath = new PathString("/signin-discord");
+    options.CorrelationCookie.HttpOnly = true;
+    options.CorrelationCookie.SameSite = SameSiteMode.None;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 builder.Services.AddControllers();
