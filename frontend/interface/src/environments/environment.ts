@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiUrl: '/api' // Replace with your actual live domain URL (None yet)
+    apiUrl: '/api' // Backend is at https://mapulon-tracker-production.up.railway.app/api
 };
