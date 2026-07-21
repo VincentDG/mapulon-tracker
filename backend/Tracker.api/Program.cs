@@ -111,6 +111,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
+
 // Custom middleware to resolve multi-hop proxy headers (Vercel -> Railway)
 app.Use((context, next) =>
 {
@@ -147,7 +149,7 @@ app.Use((context, next) =>
     return next();
 });
 
-app.UseForwardedHeaders();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
