@@ -51,13 +51,8 @@ public class RankUpdateWorker : BackgroundService
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var riotService = scope.ServiceProvider.GetRequiredService<RiotApiService>();
 
-        // Load the configured set start timestamp (defaults to Set 12 start timestamp if omitted)
+        // Load the configured set start timestamp
         var setStartTimestamp = _configuration.GetValue<long>("TftConfig:SetStartTimestamp");
-        if (setStartTimestamp == 0)
-        {
-            setStartTimestamp = 1722470400; // July 31, 2024
-        }
-
 
         // Fetch only players who have linked accounts and opted into the competition
         var players = await context.Players.Where(p => p.IsOptedIn && !string.IsNullOrEmpty(p.RiotPuuid)).ToListAsync(stoppingToken);
@@ -102,9 +97,41 @@ public class RankUpdateWorker : BackgroundService
             // Pause briefly to respect Riot's rate limits
             await Task.Delay(300, stoppingToken); 
 
-// 3. Sync Match Cache & Calculate AVP (Riot limit is 100 count)
-            var matchIds = await riotService.GetTftMatchIdsAsync(player.RiotPuuid, setStartTimestamp, count: 100, "sea");
-            if (matchIds != null && matchIds.Count > 0)
+             // 1. Clean up stale matches from previous sets for this player
+            var setStartDateTime = DateTimeOffset.FromUnixTimeSeconds(setStartTimestamp).UtcDateTime;
+            var staleMatches = await context.Matches
+                .Where(m => m.PlayerPuuid == player.RiotPuuid && m.MatchEndTime < setStartDateTime)
+                .ToListAsync(stoppingToken);
+            if (staleMatches.Count > 0)
+            {
+                context.Matches.RemoveRange(staleMatches);
+                await context.SaveChangesAsync(stoppingToken);
+                _logger.LogInformation($"Cleaned up {staleMatches.Count} stale matches from previous sets for {player.DiscordUsername}.");
+            }
+
+            // 3. Paginate & Sync Match Cache (Singapore/SEA servers use "sea" cluster)
+            var matchIds = new List<string>();
+            int startOffset = 0;
+            const int pageSize = 100;
+            while (true)
+            {
+                var pageMatchIds = await riotService.GetTftMatchIdsAsync(player.RiotPuuid, setStartTimestamp, startOffset, pageSize, "sea");
+                if (pageMatchIds == null || pageMatchIds.Count == 0)
+                {
+                    break;
+                }
+                matchIds.AddRange(pageMatchIds);
+                // If we got less than page size, we reached the end of the history
+                if (pageMatchIds.Count < pageSize)
+                {
+                    break;
+                }
+                startOffset += pageSize;
+                
+                // Brief delay between index page requests
+                await Task.Delay(500, stoppingToken);
+            }
+            if (matchIds.Count > 0)
             {
                 // Fetch already cached match IDs for this player PUUID
                 var cachedMatchIds = await context.Matches
@@ -114,10 +141,12 @@ public class RankUpdateWorker : BackgroundService
                 // Find only newly played matches
                 var newMatchIds = matchIds.Except(cachedMatchIds).ToList();
                 _logger.LogInformation($"Player has {newMatchIds.Count} new matches to download.");
+                // Adaptive delay: slow down to 1.25s if importing a lot to prevent rate limit (429) bans
+                int delayMs = newMatchIds.Count > 20 ? 1250 : 300;
                 foreach (var newMatchId in newMatchIds)
                 {
                     var matchDetails = await riotService.GetTftMatchDetailsAsync(newMatchId, "sea");
-                    if (matchDetails != null)
+                    if (matchDetails != null && matchDetails.Info.QueueId == 1100) // Standard Ranked TFT queue ID
                     {
                         var participant = matchDetails.Info.Participants.FirstOrDefault(p => p.Puuid == player.RiotPuuid);
                         if (participant != null)
@@ -132,11 +161,14 @@ public class RankUpdateWorker : BackgroundService
                             context.Matches.Add(matchEntity);
                         }
                     }
-                    await Task.Delay(300, stoppingToken); // Throttling downloads
+                    // Respect rate-limiting pacing
+                    await Task.Delay(delayMs, stoppingToken);
                 }
-                // Save new matches to the database before aggregates
-                await context.SaveChangesAsync(stoppingToken);
-                // Calculate games played and AVP from all cached matches in DB
+            if (newMatchIds.Count > 0)
+                {
+                    await context.SaveChangesAsync(stoppingToken);
+                }
+                // Recalculate AVP and games played across all cached matches (runs for everyone)
                 var allMatches = await context.Matches
                     .Where(m => m.PlayerPuuid == player.RiotPuuid)
                     .ToListAsync(stoppingToken);
@@ -145,8 +177,13 @@ public class RankUpdateWorker : BackgroundService
                     player.GamesPlayed = allMatches.Count;
                     player.AVP = Math.Round(allMatches.Average(m => m.Placement), 2);
                 }
+                else
+                {
+                    player.GamesPlayed = 0;
+                    player.AVP = 0.0;
+                }
+                await context.SaveChangesAsync(stoppingToken);
             }
-            await context.SaveChangesAsync(stoppingToken);
         }
         
         _logger.LogInformation("Database sync complete. All ranks up to date!");

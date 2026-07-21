@@ -78,9 +78,9 @@ public class RiotApiService
             return null;
         }
     }
-    public async Task<List<string>?> GetTftMatchIdsAsync(string puuid, long startTime, int count = 100, string regionCluster = "sea")
+    public async Task<List<string>?> GetTftMatchIdsAsync(string puuid, long startTime, int start = 0, int count = 100, string regionCluster = "sea")
     {
-        var url = $"https://{regionCluster}.api.riotgames.com/tft/match/v1/matches/by-puuid/{puuid}/ids?startTime={startTime}&count={count}";
+        var url = $"https://{regionCluster}.api.riotgames.com/tft/match/v1/matches/by-puuid/{puuid}/ids?startTime={startTime}&start={start}&count={count}";
         _logger.LogInformation("Querying TFT Match IDs: {Url}", url);
         try
         {
@@ -151,6 +151,7 @@ public class TftMatchMetadata
 public class TftMatchInfo
 {
     [JsonPropertyName("game_datetime")] public long GameDatetime { get; set; }
+    [JsonPropertyName("queue_id")] public int QueueId { get; set; }
     [JsonPropertyName("participants")] public List<TftMatchParticipant> Participants { get; set; } = new();
 }
 public class TftMatchParticipant
