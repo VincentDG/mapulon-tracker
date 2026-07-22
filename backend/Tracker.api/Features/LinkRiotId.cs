@@ -49,21 +49,37 @@ public class LinkRiotIdCommandHandler : IRequestHandler<LinkRiotIdCommand, LinkR
             throw new InvalidOperationException("You have already opted into the leaderboard and cannot change your linked Riot account. Please contact an admin if you need to update this.");
         }
 
+        // Clean up matches linked to the previous PUUID to prevent orphaned rows
+        if (!string.IsNullOrEmpty(player.RiotPuuid))
+        {
+            var oldMatches = await _context.Matches.Where(m => m.PlayerPuuid == player.RiotPuuid).ToListAsync(cancellationToken);
+            if (oldMatches.Any())
+            {
+                _context.Matches.RemoveRange(oldMatches);
+            }
+        }
+
+ 
+        // Reset stats for the new account linking
+        player.GamesPlayed = 0;
+        player.AVP = 0.0;
+        
+        // Reset rank data to default unranked to prevent leaking old account rank/LP
+        player.CurrentTier = "UNRANKED";
+        player.CurrentRank = "";
+        player.CurrentLP = 0;
         var riotAccount = await _riotApiService.GetAccountByRiotIdAsync(request.RiotName, request.RiotTag);
         if (riotAccount == null)
         {
             throw new ArgumentException("Could not find that Riot ID. Verify spelling or check your API key.");
         }
-
         player.RiotName = riotAccount.GameName;
         player.RiotTag = riotAccount.TagLine;
         player.RiotPuuid = riotAccount.Puuid;
-
         var summonerData = await _riotApiService.GetSummonerByPuuidAsync(riotAccount.Puuid, "sg2");
         if (summonerData != null){
             player.ProfileIconId = summonerData.ProfileIconId;
         }
-
         var tftRankings = await _riotApiService.GetTftRankByPuuidAsync(riotAccount.Puuid, "sg2");
         if (tftRankings != null)
         {

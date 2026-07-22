@@ -132,7 +132,7 @@ public class AuthController : ControllerBase
         });
     }
 
-    [HttpPost("opt-in")]
+[HttpPost("opt-in")]
     public async Task<IActionResult> OptIn()
     {
         if (User.Identity == null || !User.Identity.IsAuthenticated)
@@ -158,7 +158,43 @@ public class AuthController : ControllerBase
         }
         player.IsOptedIn = true;
         await _context.SaveChangesAsync();
-        return Ok(new { Message = "Successfully opted into the leaderboard!" });
+        return Ok(new { Message = "Successfully registered for the tournament!" });
+    }
+    
+    [HttpPost("opt-out")]
+    public async Task<IActionResult> OptOut()
+    {
+        if (User.Identity == null || !User.Identity.IsAuthenticated)
+        {
+            return Unauthorized("Not logged in.");
+        }
+        var claims = User.Identities.FirstOrDefault()?.Claims;
+        var discordId = claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(discordId))
+        {
+            return Unauthorized("Discord ID claim missing.");
+        }
+        
+        var player = await _context.Players.FirstOrDefaultAsync(p => p.DiscordId == discordId);
+        if (player == null)
+        {
+            return NotFound("Player profile not found in database.");
+        }
+        
+        player.IsOptedIn = false;
+        player.GamesPlayed = 0;
+        player.AVP = 0.0;
+        // Clean up their match history cache since they are opting out
+        if (!string.IsNullOrEmpty(player.RiotPuuid))
+        {
+            var oldMatches = await _context.Matches.Where(m => m.PlayerPuuid == player.RiotPuuid).ToListAsync();
+            if (oldMatches.Any())
+            {
+                _context.Matches.RemoveRange(oldMatches);
+            }
+        }
+        await _context.SaveChangesAsync();
+        return Ok(new { Message = "Successfully deregistered from the tournament." });
     }
 
     [HttpPost("logout")]

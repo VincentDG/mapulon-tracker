@@ -146,16 +146,17 @@ public class RankUpdateWorker : BackgroundService
                 foreach (var newMatchId in newMatchIds)
                 {
                     var matchDetails = await riotService.GetTftMatchDetailsAsync(newMatchId, "sea");
-                    if (matchDetails != null && matchDetails.Info.QueueId == 1100) // Standard Ranked TFT queue ID
+                    if (matchDetails != null)
                     {
                         var participant = matchDetails.Info.Participants.FirstOrDefault(p => p.Puuid == player.RiotPuuid);
                         if (participant != null)
                         {
+                            bool isRanked = matchDetails.Info.QueueId == 1100;
                             var matchEntity = new TftMatch
                             {
                                 MatchId = newMatchId,
                                 PlayerPuuid = player.RiotPuuid,
-                                Placement = participant.Placement,
+                                Placement = isRanked ? participant.Placement : -1, // Use -1 as sentinel for non-ranked matches
                                 MatchEndTime = DateTimeOffset.FromUnixTimeMilliseconds(matchDetails.Info.GameDatetime).UtcDateTime
                             };
                             context.Matches.Add(matchEntity);
@@ -168,14 +169,14 @@ public class RankUpdateWorker : BackgroundService
                 {
                     await context.SaveChangesAsync(stoppingToken);
                 }
-                // Recalculate AVP and games played across all cached matches (runs for everyone)
-                var allMatches = await context.Matches
-                    .Where(m => m.PlayerPuuid == player.RiotPuuid)
+                // Recalculate AVP and games played across all cached ranked matches (Placement > 0)
+                var allRankedMatches = await context.Matches
+                    .Where(m => m.PlayerPuuid == player.RiotPuuid && m.Placement > 0)
                     .ToListAsync(stoppingToken);
-                if (allMatches.Count > 0)
+                if (allRankedMatches.Count > 0)
                 {
-                    player.GamesPlayed = allMatches.Count;
-                    player.AVP = Math.Round(allMatches.Average(m => m.Placement), 2);
+                    player.GamesPlayed = allRankedMatches.Count;
+                    player.AVP = Math.Round(allRankedMatches.Average(m => m.Placement), 2);
                 }
                 else
                 {
