@@ -89,6 +89,20 @@ builder.Services.AddAuthentication(options =>
         ? CookieSecurePolicy.SameAsRequest 
         : CookieSecurePolicy.Always;
 
+    // Add this temporary logging diagnostic block
+    options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+    {
+        OnRemoteFailure = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError($"OAuth Remote Failure Details: {context.Failure?.Message}");
+            if (context.Failure?.InnerException != null)
+            {
+                logger.LogError($"Inner Exception Details: {context.Failure.InnerException.Message}");
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddControllers();
