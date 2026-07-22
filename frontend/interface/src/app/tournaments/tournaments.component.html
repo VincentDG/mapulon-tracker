@@ -1,0 +1,339 @@
+<header class="app-header">
+    <div class="logo-container" routerLink="/" style="cursor: pointer;">
+        <img src="/mapulon.png" alt="Mapulon Logo" class="header-logo" />
+        <h1 class="logo-text">Mapulon</h1>
+    </div>
+    <!-- Center the navigation link in the header -->
+    <nav class="header-nav" style="display: flex; justify-content: center; flex-grow: 1;">
+        <a routerLink="/tournaments" class="nav-link active">Tournaments</a>
+    </nav>
+    <div class="user-profile">
+        @if (isLoadingUser()) {
+        <div class="skeleton-loader user-skeleton"></div>
+        } @else if (currentUser()) {
+        <div class="user-card">
+            <img class="discord-avatar-img"
+                [src]="getDiscordAvatar(currentUser()!.discordId, currentUser()!.discordAvatarHash)" alt="Avatar" />
+            <div class="user-details">
+                <span class="user-name">{{ currentUser()?.discordGlobalName }}</span>
+                <span class="user-handle">@{{ currentUser()?.discordUsername }}</span>
+            </div>
+            <button class="btn btn-outline" (click)="logout()">Logout</button>
+        </div>
+        } @else {
+        <button class="btn btn-discord" (click)="login()">
+            <svg class="discord-icon" viewBox="0 0 127.14 96.36">
+                <path fill="currentColor"
+                    d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.9-.65,1.76-1.34,2.58-2.06a75.48,75.48,0,0,0,73.1,0c.83.72,1.68,1.41,2.58,2.06a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31.06-18.83C129.07,48.74,123.2,25.92,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z" />
+            </svg>
+            Connect Discord
+        </button>
+        }
+    </div>
+</header>
+<div class="app-container">
+    <!-- Main Content Grid -->
+    <main class="dashboard-grid">
+        <!-- Left Column: Details & Leaderboard Tabs -->
+        <section class="grid-section leaderboard-section">
+            <!-- Event Title Card -->
+            <div class="tournament-header-card">
+                <h2 class="tournament-title">Enchanted Wilds - Race to Master</h2>
+                <div class="tournament-date">
+                    <svg class="calendar-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path
+                            d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v2h-5zm-4 0h3v2H8z" />
+                    </svg>
+                    August 12, 8:00 AM - September 9, 4:00 AM
+                </div>
+            </div>
+
+            <!-- Tabs Nav Bar -->
+            <div class="tabs-container">
+                <button class="tab-button" [class.active]="activeTab() === 'details'"
+                    (click)="activeTab.set('details')">Event Details</button>
+                <button class="tab-button" [class.active]="activeTab() === 'leaderboard'"
+                    (click)="activeTab.set('leaderboard')">Leaderboard</button>
+            </div>
+
+            <!-- Tab Content View -->
+            @if (activeTab() === 'details') {
+            <div class="tournament-details-card">
+                <h4><u>Tournament Details:</u></h4>
+                <p><strong>Who:</strong> <span class="mention">OBE Mapulon</span>Members</p>
+                <p><strong>When:</strong></p>
+                <p style="padding-left: 1rem; margin: 0.25rem 0;"><strong>Start Date:</strong> August 12, 2026 8:00 AM
+                </p>
+                <p style="padding-left: 1rem; margin: 0.25rem 0;"><strong>End Date:</strong> September 9, 2026 8:00 AM
+                </p>
+                <p><strong>Format:</strong> Ladder Race - Master</p>
+                <h5 style="margin-top: 1.5rem; font-weight: 700; font-size: 1.1rem; color: #fff;">Prize Pool:</h5>
+                <p><u>First to Master</u></p>
+                <p style="padding-left: 1rem; margin: 0.25rem 0;">🥇 1st Place: P1000</p>
+                <p style="padding-left: 1rem; margin: 0.25rem 0;">🥈 2nd Place: P500</p>
+                <p style="padding-left: 1rem; margin: 0.25rem 0;">🥉 3rd Place: P250</p>
+                <p style="margin-top: 1.25rem;"><u>Lowest AVP</u></p>
+                <p style="padding-left: 1rem; margin: 0.25rem 0;">🥇 1st Place: P1000</p>
+                <p style="padding-left: 1rem; margin: 0.25rem 0;">🥈 2nd Place: P500</p>
+                <p style="padding-left: 1rem; margin: 0.25rem 0;">🥉 3rd Place: P250</p>
+                <!-- Removed the developer staff footer line -->
+            </div>
+            } @else {
+            <!-- Leaderboard Tab Content -->
+            <div class="card leaderboard-card"
+                style="border-top: none; border-top-left-radius: 0; border-top-right-radius: 0;">
+                <div class="section-header"
+                    style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span class="section-subtitle">Live rankings updated directly from Riot API</span>
+                    @if (isLoadingLeaderboard()) {
+                    <span style="color: #ffaa00; font-weight: 600;">Syncing...</span>
+                    }
+                </div>
+                <!-- API Fetching and 30-min sync warning banner -->
+                <div class="leaderboard-info-banner"
+                    style="margin-bottom: 1.5rem; background-color: rgba(163, 0, 0, 0.1); border: 1px solid rgba(163, 0, 0, 0.3); border-radius: 8px; padding: 1rem; font-size: 0.9rem; line-height: 1.5; color: rgba(255, 255, 255, 0.85);">
+                    <span style="color: #ffaa00; display: block; margin-top: 0.25rem; font-weight: 600;">Note: For
+                        newly registered summoners, the first-time fetch, game and AVP computation can take up to 30
+                        minutes to fully process.</span>
+                </div>
+                @if (isLoadingLeaderboard()) {
+                <div class="table-loading">
+                    <div class="spinner"></div>
+                    <p>Fetching rankings...</p>
+                </div>
+                } @else if (leaderboard().length === 0) {
+                <div class="empty-state">
+                    <div class="empty-icon">⚔️</div>
+                    <h3>No tracked players yet</h3>
+                    <p>Register on the right side panel and link your Riot account to join!</p>
+                </div>
+                } @else {
+                <div class="table-container">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th class="col-rank">#</th>
+                                <th class="col-player">Discord Username</th>
+                                <th class="col-riot">Riot ID</th>
+                                <th class="col-games">Games</th>
+                                <th class="col-avp">AVP</th>
+                                <th class="col-tier">TFT Rank</th>
+                                <th class="col-lp">Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (entry of leaderboard(); track entry.riotName; let idx = $index) {
+                            <tr class="leaderboard-row" [class.row-top-three]="idx < 3">
+                                <td class="col-rank">
+                                    <span class="rank-badge" [class]="'rank-' + (idx + 1)">
+                                        {{ idx + 1 }}
+                                    </span>
+                                </td>
+                                <td class="col-player">
+                                    <div class="player-info-container">
+                                        <img class="table-discord-avatar"
+                                            [src]="getDiscordAvatar(entry.discordId, entry.discordAvatarHash)"
+                                            alt="Discord" />
+                                        <div class="player-names">
+                                            <span class="discord-global-name">{{ entry.discordGlobalName }}</span>
+                                            <span class="discord-username-sub">@{{ entry.discordUsername }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="col-riot">
+                                    <div class="riot-info-container">
+                                        <img class="table-summoner-icon"
+                                            [src]="getRiotSummonerIcon(entry.profileIconId)" alt="Riot Summoner" />
+                                        <span class="riot-id-tag">
+                                            {{ entry.riotName }}<span class="riot-tagline">#{{ entry.riotTag
+                                                }}</span>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="col-games">
+                                    <span class="stat-value">{{ entry.gamesPlayed }}</span>
+                                </td>
+                                <td class="col-avp">
+                                    <span class="stat-value">{{ entry.avp > 0 ? entry.avp : '--' }}</span>
+                                </td>
+                                <td class="col-tier">
+                                    <span class="tier-badge" [class]="entry.currentTier.toLowerCase()">
+                                        {{ entry.currentTier }} {{ entry.currentRank }}
+                                    </span>
+                                </td>
+                                <td class="col-lp">
+                                    <span class="lp-value">{{ entry.currentLP }} LP</span>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
+            </div>
+            }
+        </section>
+
+        <!-- Right Column: Registration & Linking Control -->
+        <section class="grid-section control-section">
+            <div class="section-header"
+                style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <h2 class="section-title" style="margin: 0; font-size: 1.75rem;">Registration</h2>
+            </div>
+
+            <!-- Collapsible Instructions -->
+            <div class="instructions-accordion" style="margin-bottom: 1.5rem;">
+                <div class="instructions-trigger" (click)="showInstructions.set(!showInstructions())"
+                    style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem; width: fit-content; user-select: none;">
+                    <span style="font-size: 1.15rem; font-weight: 700; text-decoration: underline;">Instructions</span>
+                    <span style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">{{ showInstructions() ? '▼' : '▶'
+                        }}</span>
+                </div>
+
+                @if (showInstructions()) {
+                <ol class="instructions-list"
+                    style="margin-top: 1rem; padding-left: 1.2rem; line-height: 1.6; color: rgba(255,255,255,0.85);">
+                    <li style="margin-bottom: 0.75rem;">Log in to your Discord account on the Mapulon site.</li>
+                    <li style="margin-bottom: 0.75rem;">Once logged in, link your Riot account by inputting your details
+                        in the field.</li>
+                    <li style="margin-bottom: 0.75rem;">Once your Riot account is linked, you can register / deregister
+                        until the deadline of registration.</li>
+                </ol>
+                }
+            </div>
+
+            <!-- Account Box Details -->
+            <div class="card control-card" style="background-color: transparent; border: none; padding: 0;">
+                @if (isLoadingUser()) {
+                <div class="control-loading"
+                    style="padding: 1.5rem; background: rgba(22, 23, 37, 0.4); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="skeleton-loader form-skeleton-title"></div>
+                    <div class="skeleton-loader form-skeleton-input"></div>
+                    <div class="skeleton-loader form-skeleton-btn"></div>
+                </div>
+                } @else if (currentUser()) {
+                @if (currentUser()?.riotName) {
+                <div class="linked-badge-card"
+                    style="position: relative; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1); background-color: rgba(22, 23, 37, 0.4); padding: 1.5rem 1.25rem;">
+                    <img class="summoner-card-icon" [src]="getRiotSummonerIcon(currentUser()!.profileIconId)"
+                        alt="Summoner" />
+                    <div class="linked-details">
+                        <h3 style="color: #10b981; margin: 0 0 0.25rem 0; font-size: 1.05rem; font-weight: 700;">Linked
+                            Riot Account</h3>
+                        <p class="riot-full-name" style="font-weight: 700; font-size: 1.2rem; margin: 0 0 0.25rem 0;">{{
+                            currentUser()?.riotName }}#{{ currentUser()?.riotTag }}</p>
+                        <p class="riot-tier-info" style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.6);">
+                            Rank: {{ currentUser()?.currentTier }} {{ currentUser()?.currentRank }} - {{
+                            currentUser()?.currentLP }} LP</p>
+                    </div>
+                    <!-- Status indicator -->
+                    <span class="status-tag" [class.registered]="currentUser()?.isOptedIn"
+                        [class.unregistered]="!currentUser()?.isOptedIn"
+                        style="position: absolute; top: 1.25rem; right: 1.25rem;">
+                        {{ currentUser()?.isOptedIn ? 'Registered!' : 'Unregistered' }}
+                    </span>
+                </div>
+
+                <!-- Actions -->
+                <div class="registration-buttons" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn btn-primary" style="flex: 1; padding: 0.75rem; font-weight: 700;"
+                        (click)="toggleRegistration()" [disabled]="isSubmitting()">
+                        {{ isSubmitting() ? (currentUser()?.isOptedIn ? 'Deregistering...' : 'Registering...') :
+                        (currentUser()?.isOptedIn ? 'Deregister' : 'Register') }}
+                    </button>
+                    <button class="btn btn-outline" style="flex: 1; padding: 0.75rem; font-weight: 700;"
+                        [disabled]="currentUser()?.isOptedIn || isSubmitting()"
+                        (click)="showUpdateForm.set(!showUpdateForm())">
+                        Update Account
+                    </button>
+                </div>
+
+                <!-- Syncing Feedback Notice -->
+                @if (isSubmitting()) {
+                <div class="fetching-notice"
+                    style="margin-top: 1rem; color: #ffaa00; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
+                    <div class="spinner-small"></div> Syncing data with Riot API...
+                </div>
+                }
+
+
+                <!-- Inline update form -->
+                @if (showUpdateForm()) {
+                <div class="card form-card-inline"
+                    style="margin-top: 1.5rem; padding: 1.5rem; background-color: rgba(22, 23, 37, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;">
+                    <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.15rem;">Update Summoner ID</h3>
+                    <form (ngSubmit)="linkRiotId()" class="riot-form">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="riotName">Riot Game Name</label>
+                            <input type="text" id="riotName" name="riotName" [(ngModel)]="riotName"
+                                placeholder="e.g. Doublelift" required />
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label for="riotTag">Tag Line</label>
+                            <input type="text" id="riotTag" name="riotTag" [(ngModel)]="riotTag" placeholder="e.g. NA1"
+                                required />
+                        </div>
+                        @if (errorMessage()) {
+                        <div class="alert alert-error" style="margin-bottom: 1rem;">{{ errorMessage() }}</div>
+                        }
+                        @if (successMessage()) {
+                        <div class="alert alert-success" style="margin-bottom: 1rem;">{{ successMessage() }}</div>
+                        }
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;"
+                                [disabled]="isSubmitting()">Link ID</button>
+                            <button type="button" class="btn btn-outline" style="flex: 1;"
+                                (click)="showUpdateForm.set(false)">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                }
+                } @else {
+                <!-- Link Riot Form Directly -->
+                <div class="card control-card"
+                    style="padding: 1.5rem; background-color: rgba(22, 23, 37, 0.4); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <h3 class="form-title" style="margin-top: 0;">Link Riot Account</h3>
+                    <p class="form-desc">Entering your Riot ID updates your PUUID to retrieve stats from platform
+                        servers.</p>
+                    <form (ngSubmit)="linkRiotId()" class="riot-form">
+                        <div class="form-group">
+                            <label for="riotName">Riot Game Name</label>
+                            <input type="text" id="riotName" name="riotName" [(ngModel)]="riotName"
+                                placeholder="e.g. Doublelift" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="riotTag">Tag Line</label>
+                            <input type="text" id="riotTag" name="riotTag" [(ngModel)]="riotTag" placeholder="e.g. NA1"
+                                required />
+                        </div>
+                        @if (errorMessage()) {
+                        <div class="alert alert-error">{{ errorMessage() }}</div>
+                        }
+                        @if (successMessage()) {
+                        <div class="alert alert-success">{{ successMessage() }}</div>
+                        }
+                        <button type="submit" class="btn btn-primary btn-full" [disabled]="isSubmitting()">Link
+                            Account</button>
+                    </form>
+                </div>
+                }
+                } @else {
+                <div class="login-prompt"
+                    style="padding: 2rem; background: rgba(22, 23, 37, 0.4); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="prompt-icon">🔑</div>
+                    <h3>Authentication Required</h3>
+                    <p>You must connect your Discord account before linking your Riot account or participating in
+                        tournaments.</p>
+                    <button class="btn btn-discord btn-full" (click)="login()">
+                        <svg class="discord-icon" viewBox="0 0 127.14 96.36">
+                            <path fill="currentColor"
+                                d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.9-.65,1.76-1.34,2.58-2.06a75.48,75.48,0,0,0,73.1,0c.83.72,1.68,1.41,2.58,2.06a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31.06-18.83C129.07,48.74,123.2,25.92,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z" />
+                        </svg>
+                        Connect Discord
+                    </button>
+                </div>
+                }
+            </div>
+        </section>
+    </main>
+</div>

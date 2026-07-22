@@ -17,12 +17,13 @@
     /* UI colors */
     --success: #10b981;
     --error: #ef4444;
-    font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    /* Set uniform typography to match landing */
     color: var(--text-main);
-    background-color: var(--bg-primary);
-    background-image:
-        radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(243, 169, 43, 0.05) 0%, transparent 45%);
+    background-color: #000000;
+    /* Pure black background uniform with landing */
+    background-image: none;
+    /* Removed the radial dark-blue gradient */
     min-height: 100vh;
     display: block;
 }
@@ -58,9 +59,8 @@
     font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    background: linear-gradient(135deg, #fff 30%, #a855f7 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #ffffff;
+    /* Replaced purple gradient with solid white */
     margin: 0;
 }
 
@@ -114,7 +114,8 @@
 
 @media (min-width: 992px) {
     .dashboard-grid {
-        grid-template-columns: 1.75fr 1fr;
+        grid-template-columns: 2.2fr 1fr;
+        /* Swapped 1.75fr with 2.2fr to narrow the right panel */
     }
 }
 
@@ -337,18 +338,20 @@
     text-transform: uppercase;
 }
 
-/* Challenger color theme */
+/* Challenger color theme (Swapped to Yellow) */
 .tier-badge.challenger {
+    background: rgba(243, 169, 43, 0.15);
+    color: #f3a92b;
+    border: 1px solid rgba(243, 169, 43, 0.3);
+    box-shadow: 0 0 8px rgba(243, 169, 43, 0.15);
+}
+
+/* Grandmaster color theme (Swapped to Red) */
+.tier-badge.grandmaster {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
     border: 1px solid rgba(239, 68, 68, 0.3);
     box-shadow: 0 0 8px rgba(239, 68, 68, 0.15);
-}
-
-.tier-badge.grandmaster {
-    background: rgba(249, 115, 22, 0.15);
-    color: #f97316;
-    border: 1px solid rgba(249, 115, 22, 0.3);
 }
 
 .tier-badge.master {
@@ -400,9 +403,10 @@
 }
 
 .tier-badge.unranked {
-    background: rgba(75, 85, 99, 0.15);
-    color: #9ca3af;
-    border: 1px solid rgba(75, 85, 99, 0.3);
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
 }
 
 .lp-value {
@@ -862,4 +866,747 @@
     color: var(--text-muted);
     margin: 0;
     line-height: 1.4;
+}
+
+/* ==========================================
+   LANDING PAGE LAYOUT & TYPOGRAPHY
+   ========================================== */
+.landing-page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Nav Header */
+.landing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2.5rem;
+    background-color: #000000 !important;
+    /* Solid black background */
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.header-title,
+.logo-text {
+    color: #ffffff !important;
+    /* Brand titles forced to white */
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-logo {
+    width: 2.25rem;
+    height: 2.25rem;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.header-title {
+    color: #a30000;
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+}
+
+.header-nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.05rem;
+    padding-bottom: 4px;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #ffffff;
+    border-bottom-color: #a30000;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.btn-connect-discord {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #5865f2;
+    color: #ffffff;
+    border: none;
+    padding: 0.65rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-connect-discord:hover {
+    background-color: #4752c4;
+    transform: translateY(-1px);
+}
+
+.discord-svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.nav-user-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-avatar {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+}
+
+.nav-username {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.nav-skeleton {
+    width: 120px;
+    height: 38px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    animation: pulse 1.5s infinite;
+}
+
+/* Hero Section */
+.hero-section {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    align-items: center;
+    gap: 4rem;
+    padding: 5rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: calc(70vh - 80px);
+}
+
+.hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: rgba(163, 0, 0, 0.1);
+    border: 1px solid rgba(163, 0, 0, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    width: fit-content;
+}
+
+.hero-logo-small {
+    width: 1.25rem;
+    height: 1.25rem;
+    object-fit: contain;
+}
+
+.hero-brand-name {
+    color: #a30000;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.hero-title {
+    font-size: 2.85rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+}
+
+.hero-description {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.hero-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-mascot {
+    max-width: 100%;
+    height: auto;
+    max-height: 550px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(163, 0, 0, 0.15));
+    animation: float 4s ease-in-out infinite;
+}
+
+/* About Section */
+.about-section {
+    padding: 4rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.about-card {
+    display: grid;
+    grid-template-columns: 0.7fr 1.3fr;
+    background-color: rgba(10, 10, 10, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.about-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(163, 0, 0, 0.15));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.about-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.about-image {
+    max-width: 100%;
+    height: auto;
+    max-height: 240px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3rem;
+    gap: 1.25rem;
+}
+
+.about-title {
+    font-size: 1.85rem;
+    font-weight: 700;
+}
+
+.about-description {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.about-organization {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.btn-join-discord {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    background-color: #5865f2;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    width: fit-content;
+    margin-top: 1rem;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-join-discord:hover {
+    background-color: #4752c4;
+    transform: translateY(-1px);
+}
+
+/* Footer */
+.landing-footer {
+    margin-top: auto;
+    padding: 3rem 4rem;
+    background-color: rgba(0, 0, 0, 0.9);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    text-align: center;
+}
+
+.footer-disclaimer {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.4);
+    max-width: 800px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.footer-link {
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    color: #ffffff;
+}
+
+.footer-divider {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.85rem;
+}
+
+/* Animations */
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-12px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
+}
+
+/* Responsive Scaling */
+@media (max-width: 900px) {
+    .hero-section {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+
+    .hero-brand {
+        margin: 0 auto;
+    }
+
+    .hero-mascot {
+        max-height: 280px;
+    }
+
+    .about-card {
+        grid-template-columns: 1fr;
+    }
+
+    .about-image-container {
+        padding: 2rem;
+    }
+
+    .about-content {
+        padding: 2rem;
+        text-align: center;
+        align-items: center;
+    }
+
+    .btn-join-discord {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .landing-footer {
+        padding: 2rem;
+    }
+}
+
+/* Update app-header to span the entire page and use solid black background */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2.5rem;
+    /* Expanded padding to align with landing page */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #000000 !important;
+    /* Pure black background uniform with landing */
+    background-image: none !important;
+    margin-bottom: 2.5rem;
+}
+
+/* Force header logo and hero logo to be circle */
+.header-logo,
+.hero-logo-small {
+    width: 2.25rem;
+    height: 2.25rem;
+    object-fit: contain;
+    border-radius: 50% !important;
+    /* Circle logo */
+}
+
+.hero-logo-small {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Logout Button */
+.btn-logout {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn-logout:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* About Section Full-Width Maroon Wrapper */
+.about-section {
+    background-color: #500000;
+    /* Maroon background */
+    padding: 5rem 0;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2.5rem;
+}
+
+.about-card {
+    display: grid;
+    grid-template-columns: 0.7fr 1.3fr;
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Dark card blends on top of maroon */
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.about-card::before {
+    display: none;
+    /* Removed the gradient border overlay to clean up full-width style */
+}
+
+/* Standalone Community / Discord Section */
+.community-section {
+    padding: 6rem 2.5rem;
+    text-align: center;
+    background-color: #000000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.community-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.community-desc {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 600px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Tournament Page Components styling */
+.tournament-header-card {
+    background-image: url('/tournament_bg.png');
+    /* Overlay background image */
+    background-size: cover;
+    background-position: center;
+    color: #1b4332;
+    /* Dark green text for contrast on cream bg */
+    padding: 2.25rem 2.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tournament-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    color: #1b4332;
+}
+
+.tournament-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1b4332;
+    /* Match title color for readability on cream bg */
+}
+
+/* Instructions lists */
+.instructions-list {
+    margin-top: 1rem;
+    padding-left: 1.2rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    /* Smaller font as requested */
+}
+
+.instructions-list li {
+    margin-bottom: 0.5rem;
+}
+
+.calendar-icon {
+    opacity: 0.85;
+}
+
+.tabs-container {
+    display: flex;
+    gap: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.tab-button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+    color: #fff;
+}
+
+.tab-button.active {
+    color: #fff;
+    border-bottom-color: #a30000;
+}
+
+.tournament-details-card {
+    background-color: rgba(22, 23, 37, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 2rem;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.tournament-details-card h4 {
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+    font-size: 1.15rem;
+}
+
+.tournament-details-card p {
+    margin: 0.6rem 0;
+    line-height: 1.6;
+}
+
+.mention {
+    background-color: rgba(163, 0, 0, 0.15);
+    color: #ff4d4d;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.status-tag {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.status-tag.registered {
+    color: #10b981;
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-tag.unregistered {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Disabled button styles */
+.btn-outline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.3) !important;
+    background: transparent !important;
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Small inline loader */
+.spinner-small {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #ffaa00;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Custom Registration Action Buttons Styling */
+.registration-buttons .btn-primary {
+    background-color: #a30000 !important;
+    /* Maroon matching the brand logo */
+    color: #ffffff !important;
+    border: none !important;
+    transition: background-color 0.2s ease;
+}
+
+.registration-buttons .btn-primary:hover {
+    background-color: #800000 !important;
+}
+
+.registration-buttons .btn-outline {
+    background-color: #ffffff !important;
+    /* White background */
+    color: #000000 !important;
+    /* Black text */
+    border: none !important;
+    transition: opacity 0.2s ease;
+}
+
+.registration-buttons .btn-outline:hover {
+    opacity: 0.9 !important;
+}
+
+.registration-buttons .btn-outline:disabled {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    opacity: 0.5 !important;
+    cursor: not-allowed;
+}
+
+/* User Card Alignments for Landing Header */
+.nav-user-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Registration Action Buttons Styling */
+.registration-buttons .btn-primary {
+    background: #a30000 !important;
+    /* Changed to 'background' to clear the default purple gradient */
+    color: #ffffff !important;
+    border: none !important;
+    transition: background-color 0.2s ease;
+}
+
+.registration-buttons .btn-primary:hover {
+    background: #800000 !important;
 }
