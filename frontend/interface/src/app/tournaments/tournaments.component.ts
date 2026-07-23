@@ -46,17 +46,18 @@ interface LeaderboardEntry {
 export class TournamentsComponent implements OnInit {
     private readonly http = inject(HttpClient);
     private readonly apiUrl = environment.apiUrl;
-
     protected readonly currentUser = signal<PlayerDto | null>(null);
-    protected readonly leaderboard = signal<LeaderboardEntry[]>([]);
     protected readonly isLoadingUser = signal(true);
+    protected readonly leaderboard = signal<LeaderboardEntry[]>([]);
     protected readonly isLoadingLeaderboard = signal(true);
+    protected readonly activeTab = signal<'details' | 'leaderboard'>('details');
+    protected readonly showUpdateForm = signal(false);
+    protected readonly isMenuOpen = signal(false); // Added for mobile navigation toggle
+
     protected readonly isSubmitting = signal(false);
 
     // Interactive Layout Signals
-    protected readonly activeTab = signal<'details' | 'leaderboard'>('details');
     protected readonly showInstructions = signal(true);
-    protected readonly showUpdateForm = signal(false);
 
     protected riotName = '';
     protected riotTag = '';

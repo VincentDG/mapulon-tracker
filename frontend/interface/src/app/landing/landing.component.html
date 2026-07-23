@@ -1,16 +1,17 @@
 <div class="landing-page-container">
     <!-- Nav header -->
     <header class="landing-header">
-        <div class="header-left">
+        <div class="header-left" routerLink="/" style="cursor: pointer;">
             <img src="/mapulon.png" alt="Mapulon Logo" class="header-logo" />
             <span class="header-title">Mapulon</span>
         </div>
-
-        <nav class="header-nav">
+        <!-- Center the navigation link (Desktop only) -->
+        <nav class="header-nav desktop-only" style="display: flex; justify-content: center; flex-grow: 1;">
             <a routerLink="/tournaments" class="nav-link">Tournaments</a>
         </nav>
-
-        <div class="header-right">
+        <!-- Mobile current tab indicator -->
+        <span class="mobile-current-tab">Home</span>
+        <div class="header-right desktop-only">
             @if (isLoadingUser()) {
             <div class="nav-skeleton"></div>
             } @else if (currentUser()) {
@@ -28,7 +29,7 @@
             </div>
             } @else {
             <button class="btn-connect-discord" (click)="login()">
-                <svg class="discord-svg" viewBox="0 0 127.14 96.36">
+                <svg class="discord-icon" viewBox="0 0 127.14 96.36" width="18" height="18">
                     <path fill="currentColor"
                         d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.9-.65,1.76-1.34,2.58-2.06a75.48,75.48,0,0,0,73.1,0c.83.72,1.68,1.41,2.58,2.06a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31.06-18.83C129.07,48.74,123.2,25.92,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z" />
                 </svg>
@@ -36,7 +37,62 @@
             </button>
             }
         </div>
+        <!-- Hamburger menu button -->
+        <button class="hamburger-btn" (click)="isMenuOpen.set(true)">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </header>
+
+    <!-- Mobile Navigation Overlay Drawer -->
+    @if (isMenuOpen()) {
+    <div class="mobile-menu-overlay" (click)="isMenuOpen.set(false)">
+        <div class="mobile-menu-drawer" (click)="$event.stopPropagation()">
+            <div class="mobile-menu-header">
+                <div class="logo-container">
+                    <img src="/mapulon.png" alt="Mapulon Logo" class="header-logo" />
+                    <span class="logo-text">Mapulon</span>
+                </div>
+                <button class="btn-close-menu" (click)="isMenuOpen.set(false)">&times;</button>
+            </div>
+            <nav class="mobile-nav-links">
+                <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+                    (click)="isMenuOpen.set(false)">Home</a>
+                <a routerLink="/tournaments" routerLinkActive="active" (click)="isMenuOpen.set(false)">Tournaments</a>
+            </nav>
+            <div class="mobile-menu-footer">
+                @if (isLoadingUser()) {
+                <div class="nav-skeleton" style="width: 100%;"></div>
+                } @else if (currentUser()) {
+                <!-- Integrated horizontal user card with logout button -->
+                <div class="mobile-user-card"
+                    style="display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <img class="nav-avatar"
+                            [src]="getDiscordAvatar(currentUser()!.discordId, currentUser()!.discordAvatarHash)"
+                            alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%;" />
+                        <div class="mobile-user-details"
+                            style="display: flex; flex-direction: column; line-height: 1.2;">
+                            <span class="nav-username" style="font-weight: 600; font-size: 0.95rem;">{{
+                                currentUser()!.discordGlobalName }}</span>
+                            <span class="nav-handle" style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.5);">@{{
+                                currentUser()!.discordUsername }}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;"
+                        (click)="logout(); isMenuOpen.set(false)">Logout</button>
+                </div>
+                } @else {
+                <button class="btn btn-discord btn-full" (click)="login(); isMenuOpen.set(false)">
+                    Connect Discord
+                </button>
+                }
+            </div>
+        </div>
+    </div>
+    }
+
 
     <!-- Hero Section -->
     <section class="hero-section">
@@ -61,12 +117,21 @@
     <section class="about-section">
         <div class="about-container">
             <div class="about-card">
-                <div class="about-image-container">
+                <!-- Desktop Logo (Hidden on mobile) -->
+                <div class="about-image-container desktop-only">
                     <img src="/challpengu.png" alt="Gold Armor Pengu" class="about-image" />
                 </div>
 
                 <div class="about-content">
                     <h3 class="about-title">About OBE Mapulon</h3>
+
+                    <!-- Mobile Logo (Rendered only on mobile, below header but above paragraphs) -->
+                    <div class="about-image-container mobile-only"
+                        style="background-color: transparent !important; padding: 1.5rem 0 !important; width: 100%; display: flex; justify-content: center;">
+                        <img src="/challpengu.png" alt="Gold Armor Pengu" class="about-image"
+                            style="max-height: 180px;" />
+                    </div>
+
                     <p class="about-description">
                         Oblation eSports is the official eSports organization of UP - Diliman, establishing a legacy of
                         collegiate excellence.
@@ -79,11 +144,11 @@
                         Together, in the spirit of adaptation, OBE Mapulon hosts seasonal Teamfight Tactics leagues for
                         players to compete, test their strategies, and climb the ranks.
                     </p>
-
                 </div>
             </div>
         </div>
     </section>
+
 
     <!-- Standalone Join Discord Section -->
     <section class="community-section">

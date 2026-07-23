@@ -31,6 +31,7 @@ export class LandingComponent implements OnInit {
     private readonly apiUrl = environment.apiUrl;
     protected readonly currentUser = signal<PlayerDto | null>(null);
     protected readonly isLoadingUser = signal(true);
+    protected readonly isMenuOpen = signal(false); // Added for mobile navigation toggle
     ngOnInit() {
         this.fetchCurrentUser();
     }
