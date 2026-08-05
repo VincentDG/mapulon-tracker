@@ -85,6 +85,15 @@ public class RankUpdateWorker : BackgroundService
                     player.CurrentTier = soloQueue.Tier;
                     player.CurrentRank = soloQueue.Rank;
                     player.CurrentLP = soloQueue.LeaguePoints;
+
+                    // Sync Master tier achievements
+                    var tierUpper = soloQueue.Tier.ToUpper();
+                    if ((tierUpper == "MASTER" || tierUpper == "GRANDMASTER" || tierUpper == "CHALLENGER") && !player.HasHitMasterThisSet)
+                    {
+                        player.HasHitMasterThisSet = true;
+                        player.TimestampHitMaster = DateTime.UtcNow;
+                        _logger.LogInformation($"🎉 ACHIEVEMENT: {player.DiscordUsername} has reached {soloQueue.Tier}!");
+                    }
                 }
                 else
                 {

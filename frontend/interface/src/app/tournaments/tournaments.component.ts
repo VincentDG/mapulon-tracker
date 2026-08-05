@@ -20,6 +20,7 @@ interface PlayerDto {
     currentRank: string;
     currentLP: number;
     isAdmin: boolean;
+    isRegistrationOpen: boolean; // Added status field
 }
 
 interface LeaderboardEntry {
@@ -35,6 +36,9 @@ interface LeaderboardEntry {
     currentTier: string;
     currentRank: string;
     currentLP: number;
+    hasHitMasterThisSet: boolean;
+    timestampHitMaster?: Date | null;
+    avpOnHitMaster?: number | null;
 }
 
 @Component({
@@ -53,7 +57,7 @@ export class TournamentsComponent implements OnInit {
     protected readonly activeTab = signal<'details' | 'leaderboard'>('details');
     protected readonly showUpdateForm = signal(false);
     protected readonly isMenuOpen = signal(false); // Added for mobile navigation toggle
-
+    protected readonly isRegistrationOpen = signal(true); // Tracks if registration is active
     protected readonly isSubmitting = signal(false);
 
     // Interactive Layout Signals
@@ -75,6 +79,7 @@ export class TournamentsComponent implements OnInit {
         this.http.get<PlayerDto>(`${this.apiUrl}/auth/me`, { withCredentials: true }).subscribe({
             next: (user) => {
                 this.currentUser.set(user);
+                this.isRegistrationOpen.set(user.isRegistrationOpen);
                 this.isLoadingUser.set(false);
             },
             error: () => {

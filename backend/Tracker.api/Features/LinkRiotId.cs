@@ -44,6 +44,17 @@ public class LinkRiotIdCommandHandler : IRequestHandler<LinkRiotIdCommand, LinkR
             throw new UnauthorizedAccessException("You are not authorized to update this profile.");
         }
 
+        // Enforce registration deadline (GMT+8 of the race day)
+        var setStartTimestamp = _configuration.GetValue<long>("TftConfig:SetStartTimestamp");
+        var setStartOffset = DateTimeOffset.FromUnixTimeSeconds(setStartTimestamp).ToOffset(TimeSpan.FromHours(8));
+        var deadlineOffset = new DateTimeOffset(setStartOffset.Year, setStartOffset.Month, setStartOffset.Day, 0, 0, 0, TimeSpan.FromHours(8));
+
+        if (DateTimeOffset.UtcNow >= deadlineOffset && !isRequesterAdmin){
+            if (!player.IsOptedIn){
+                throw new InvalidOperationException("Registration is closed.");
+            }
+        }
+        
         // 3. Prevent non-admins from changing Riot ID if they are already competing.
         if (player.IsOptedIn && !isRequesterAdmin){
             throw new InvalidOperationException("You have already opted into the leaderboard and cannot change your linked Riot account. Please contact an admin if you need to update this.");
@@ -59,7 +70,6 @@ public class LinkRiotIdCommandHandler : IRequestHandler<LinkRiotIdCommand, LinkR
             }
         }
 
- 
         // Reset stats for the new account linking
         player.GamesPlayed = 0;
         player.AVP = 0.0;
@@ -89,6 +99,13 @@ public class LinkRiotIdCommandHandler : IRequestHandler<LinkRiotIdCommand, LinkR
                 player.CurrentTier = soloQueue.Tier;
                 player.CurrentRank = soloQueue.Rank;
                 player.CurrentLP = soloQueue.LeaguePoints;
+
+                // Sync Master tier achievements
+                var tierUpper = soloQueue.Tier.ToUpper();
+                if ((tierUpper == "MASTER" || tierUpper == "GRANDMASTER" || tierUpper == "CHALLENGER") && !player.HasHitMasterThisSet){
+                    player.HasHitMasterThisSet = true;
+                    player.TimestampHitMaster = DateTime.UtcNow;
+                }
             }
         }
 

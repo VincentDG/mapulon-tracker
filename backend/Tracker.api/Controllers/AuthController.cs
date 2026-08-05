@@ -113,6 +113,13 @@ public class AuthController : ControllerBase
         // Determine if current player is an administrator
         var adminIds = _configuration.GetSection("Admins:DiscordIds").Get<string[]>() ?? Array.Empty<string>();
         bool isAdmin = adminIds.Contains(player.DiscordId);
+
+        // Check if registration is open (Midnight GMT+8 of the race day)
+        var setStartTimestamp = _configuration.GetValue<long>("TftConfig:SetStartTimestamp");
+        var setStartOffset = DateTimeOffset.FromUnixTimeSeconds(setStartTimestamp).ToOffset(TimeSpan.FromHours(8));
+        var deadlineOffset = new DateTimeOffset(setStartOffset.Year, setStartOffset.Month, setStartOffset.Day, 0, 0, 0, TimeSpan.FromHours(8));
+        bool isRegistrationOpen = DateTimeOffset.UtcNow < deadlineOffset || isAdmin;
+
         return Ok(new
         {
             player.DiscordId,
@@ -128,7 +135,8 @@ public class AuthController : ControllerBase
             player.IsOptedIn,
             player.GamesPlayed,
             player.AVP,
-            IsAdmin = isAdmin // Expose to client
+            IsAdmin = isAdmin,
+            IsRegistrationOpen = isRegistrationOpen
         });
     }
 
@@ -150,6 +158,18 @@ public class AuthController : ControllerBase
         if (player == null)
         {
             return NotFound("Player profile not found in database.");
+        }
+
+        // Enforce registration deadline (GMT+8 of the race day)
+        var setStartTimestamp = _configuration.GetValue<long>("TftConfig:SetStartTimestamp");
+        var setStartOffset = DateTimeOffset.FromUnixTimeSeconds(setStartTimestamp).ToOffset(TimeSpan.FromHours(8));
+        var deadlineOffset = new DateTimeOffset(setStartOffset.Year, setStartOffset.Month, setStartOffset.Day, 0, 0, 0, TimeSpan.FromHours(8));
+        
+        var adminIds = _configuration.GetSection("Admins:DiscordIds").Get<string[]>() ?? Array.Empty<string>();
+        bool isAdmin = adminIds.Contains(player.DiscordId);
+
+        if (DateTimeOffset.UtcNow >= deadlineOffset && !isAdmin){
+            throw new InvalidOperationException("Registration is closed.");
         }
         
         if (string.IsNullOrEmpty(player.RiotPuuid))
@@ -180,7 +200,19 @@ public class AuthController : ControllerBase
         {
             return NotFound("Player profile not found in database.");
         }
-        
+
+        // Enforce deregistration deadline (GMT+8 of the race day)
+        var setStartTimestamp = _configuration.GetValue<long>("TftConfig:SetStartTimestamp");
+        var setStartOffset = DateTimeOffset.FromUnixTimeSeconds(setStartTimestamp).ToOffset(TimeSpan.FromHours(8));
+        var deadlineOffset = new DateTimeOffset(setStartOffset.Year, setStartOffset.Month, setStartOffset.Day, 0, 0, 0, TimeSpan.FromHours(8));
+        var adminIds = _configuration.GetSection("Admins:DiscordIds").Get<string[]>() ?? Array.Empty<string>();
+        bool isAdmin = adminIds.Contains(player.DiscordId);
+
+        if (DateTimeOffset.UtcNow >= deadlineOffset && !isAdmin)
+        {
+            return BadRequest("Deregistration is closed. Registered users cannot deregister once the day of the race has started.");
+        }
+
         player.IsOptedIn = false;
         player.GamesPlayed = 0;
         player.AVP = 0.0;

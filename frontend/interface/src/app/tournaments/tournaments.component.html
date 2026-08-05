@@ -97,7 +97,7 @@
                         <path
                             d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v2h-5zm-4 0h3v2H8z" />
                     </svg>
-                    August 12, 8:00 AM - September 9, 4:00 AM
+                    August 26, 8:00 AM - September 23, 4:00 AM
                 </div>
             </div>
 
@@ -113,11 +113,11 @@
             @if (activeTab() === 'details') {
             <div class="tournament-details-card">
                 <h4><u>Tournament Details:</u></h4>
-                <p><strong>Who:</strong> <span class="mention">OBE Mapulon</span>Members</p>
+                <p><strong>Who:</strong> <span class="mention">OBE Mapulon Members</span></p>
                 <p><strong>When:</strong></p>
-                <p style="padding-left: 1rem; margin: 0.25rem 0;"><strong>Start Date:</strong> August 12, 2026 8:00 AM
+                <p style="padding-left: 1rem; margin: 0.25rem 0;"><strong>Start Date:</strong> August 26, 2026 8:00 AM
                 </p>
-                <p style="padding-left: 1rem; margin: 0.25rem 0;"><strong>End Date:</strong> September 9, 2026 8:00 AM
+                <p style="padding-left: 1rem; margin: 0.25rem 0;"><strong>End Date:</strong> September 23, 2026 4:00 AM
                 </p>
                 <p><strong>Format:</strong> Ladder Race - Master</p>
                 <h5 style="margin-top: 1.5rem; font-weight: 700; font-size: 1.1rem; color: #fff;">Prize Pool:</h5>
@@ -169,9 +169,18 @@
                                 <th class="col-player">Discord Username</th>
                                 <th class="col-riot">Riot ID</th>
                                 <th class="col-games">Games</th>
-                                <th class="col-avp">AVP</th>
-                                <th class="col-tier">TFT Rank</th>
-                                <th class="col-lp">Points</th>
+                                <th class="col-tier">Rank</th>
+                                <th class="col-lp">LP</th>
+                                <th class="col-master-time">Master Reached</th>
+                                <th class="col-master-avp">
+                                    <div class="tooltip-container">
+                                        AVP
+                                        <span class="info-icon"
+                                            style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.8; background: rgba(255, 255, 255, 0.08); border-radius: 50%; width: 13px; height: 13px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700;">?</span>
+                                        <span class="tooltip-text">This is the snapshot of the AVP taken pre-master and
+                                            will no longer update the moment master is reached.</span>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -206,9 +215,6 @@
                                 <td class="col-games">
                                     <span class="stat-value">{{ entry.gamesPlayed }}</span>
                                 </td>
-                                <td class="col-avp">
-                                    <span class="stat-value">{{ entry.avp > 0 ? entry.avp : '--' }}</span>
-                                </td>
                                 <td class="col-tier">
                                     <span class="tier-badge" [class]="entry.currentTier.toLowerCase()">
                                         {{ entry.currentTier }} {{ entry.currentRank }}
@@ -216,6 +222,18 @@
                                 </td>
                                 <td class="col-lp">
                                     <span class="lp-value">{{ entry.currentLP }} LP</span>
+                                </td>
+                                <td class="col-master-time">
+                                    <span class="stat-value">
+                                        {{ entry.hasHitMasterThisSet && entry.timestampHitMaster ?
+                                        (entry.timestampHitMaster | date:'MMM d, h:mm a') : '--' }}
+                                    </span>
+                                </td>
+                                <td class="col-master-avp">
+                                    <span class="stat-value">
+                                        {{ entry.hasHitMasterThisSet && entry.avpOnHitMaster ? (entry.avpOnHitMaster |
+                                        number:'1.2-2') : '--' }}
+                                    </span>
                                 </td>
                             </tr>
                             }
@@ -230,8 +248,24 @@
         <!-- Right Column: Registration & Linking Control -->
         <section class="grid-section control-section">
             <div class="section-header"
-                style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; width: 100%;">
                 <h2 class="section-title" style="margin: 0; font-size: 1.75rem;">Registration</h2>
+                @if (currentUser()) {
+                <span class="registration-status-badge"
+                    [style.background-color]="isRegistrationOpen() ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'"
+                    [style.border]="isRegistrationOpen() ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(239, 68, 68, 0.4)'"
+                    [style.color]="isRegistrationOpen() ? '#10b981' : '#ef4444'"
+                    style="font-size: 0.85rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block;">
+                    {{ isRegistrationOpen() ? 'Open' : 'Closed' }}
+                </span>
+                }
+            </div>
+
+            <!-- Registration Deadline Banner -->
+            <div class="registration-deadline-banner"
+                style="margin-bottom: 1.5rem; background-color: rgba(163, 0, 0, 0.15); border: 1.5px solid rgba(163, 0, 0, 0.4); border-radius: 8px; padding: 0.85rem 1rem; font-size: 0.85rem; line-height: 1.4; color: rgba(255, 255, 255, 0.9);">
+                ⚠️ <strong>Notice:</strong> You may only register or deregister up to <strong>11:59 PM</strong> of the
+                day before the race.
             </div>
 
             <!-- Collapsible Instructions -->
@@ -287,15 +321,22 @@
                     </span>
                 </div>
 
+                <!-- General Registration Error Notice -->
+                @if (errorMessage()) {
+                <div class="alert alert-error" style="margin-top: 1rem; margin-bottom: 1rem; font-size: 0.9rem;">
+                    {{ errorMessage() }}
+                </div>
+                }
+
                 <!-- Actions -->
                 <div class="registration-buttons" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
                     <button class="btn btn-primary" style="flex: 1; padding: 0.75rem; font-weight: 700;"
-                        (click)="toggleRegistration()" [disabled]="isSubmitting()">
+                        (click)="toggleRegistration()" [disabled]="isSubmitting() || !isRegistrationOpen()">
                         {{ isSubmitting() ? (currentUser()?.isOptedIn ? 'Deregistering...' : 'Registering...') :
                         (currentUser()?.isOptedIn ? 'Deregister' : 'Register') }}
                     </button>
                     <button class="btn btn-outline" style="flex: 1; padding: 0.75rem; font-weight: 700;"
-                        [disabled]="currentUser()?.isOptedIn || isSubmitting()"
+                        [disabled]="currentUser()?.isOptedIn || isSubmitting() || !isRegistrationOpen()"
                         (click)="showUpdateForm.set(!showUpdateForm())">
                         Update Account
                     </button>
@@ -365,7 +406,8 @@
                         @if (successMessage()) {
                         <div class="alert alert-success">{{ successMessage() }}</div>
                         }
-                        <button type="submit" class="btn btn-primary btn-full" [disabled]="isSubmitting()">Link
+                        <button type="submit" class="btn btn-primary btn-full"
+                            [disabled]="isSubmitting() || !isRegistrationOpen()">Link
                             Account</button>
                     </form>
                 </div>

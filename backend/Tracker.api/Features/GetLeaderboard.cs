@@ -18,7 +18,10 @@ public record LeaderboardPlayerDto(
     double AVP,
     string CurrentTier,
     string CurrentRank,
-    int CurrentLP
+    int CurrentLP,
+    bool HasHitMasterThisSet,
+    DateTime? TimestampHitMaster,
+    double? AVPOnHitMaster
 );
 
 public class GetLeaderboardQueryHandler : IRequestHandler<GetLeaderboardQuery, List<LeaderboardPlayerDto>>
@@ -35,7 +38,24 @@ public class GetLeaderboardQueryHandler : IRequestHandler<GetLeaderboardQuery, L
         // Fetch all opted-in players who have linked a Riot account
         var players = await _context.Players
             .Where(p => p.IsOptedIn && !string.IsNullOrEmpty(p.RiotPuuid))
-            .Select(p => new LeaderboardPlayerDto(
+            .ToListAsync(cancellationToken);
+        var leaderboardList = new List<LeaderboardPlayerDto>();
+        foreach (var p in players)
+        {
+            double? avpOnHitMaster = null;
+            if (p.HasHitMasterThisSet && p.TimestampHitMaster.HasValue)
+            {
+                // Calculate AVP dynamically at the exact point they reached Master
+                var matchesBeforeMaster = await _context.Matches
+                    .Where(m => m.PlayerPuuid == p.RiotPuuid && m.Placement > 0 && m.MatchEndTime <= p.TimestampHitMaster.Value)
+                    .Select(m => m.Placement)
+                    .ToListAsync(cancellationToken);
+                if (matchesBeforeMaster.Any())
+                {
+                    avpOnHitMaster = Math.Round(matchesBeforeMaster.Average(), 2);
+                }
+            }
+            leaderboardList.Add(new LeaderboardPlayerDto(
                 p.DiscordUsername,
                 p.DiscordGlobalName,
                 p.DiscordAvatarHash,
@@ -47,12 +67,15 @@ public class GetLeaderboardQueryHandler : IRequestHandler<GetLeaderboardQuery, L
                 p.AVP,
                 p.CurrentTier,
                 p.CurrentRank,
-                p.CurrentLP
-            ))
-            .ToListAsync(cancellationToken);
+                p.CurrentLP,
+                p.HasHitMasterThisSet,
+                p.TimestampHitMaster,
+                avpOnHitMaster
+            ));
+        }
         
         // Sort players in-memory based on TFT rank
-        var sortedLeaderboard = players
+        var sortedLeaderboard = leaderboardList
             .OrderByDescending(p => GetTierValue(p.CurrentTier))
             .ThenByDescending(p => GetRankValue(p.CurrentRank))
             .ThenByDescending(p => p.CurrentLP)
