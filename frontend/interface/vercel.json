@@ -2,11 +2,11 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://mapulon-tracker-production.up.railway.app/api/:path*"
+            "destination": "https://mapulon-tracker.onrender.com/api/:path*"
         },
         {
             "source": "/signin-discord",
-            "destination": "https://mapulon-tracker-production.up.railway.app/signin-discord"
+            "destination": "https://mapulon-tracker.onrender.com/signin-discord"
         }
     ]
 }
