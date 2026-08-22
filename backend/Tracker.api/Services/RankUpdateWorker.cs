@@ -87,8 +87,9 @@ public class RankUpdateWorker : BackgroundService
                     player.CurrentLP = soloQueue.LeaguePoints;
 
                     // Sync Master tier achievements
+                    var isRaceStarted = DateTimeOffset.UtcNow >= DateTimeOffset.FromUnixTimeSeconds(setStartTimestamp);
                     var tierUpper = soloQueue.Tier.ToUpper();
-                    if ((tierUpper == "MASTER" || tierUpper == "GRANDMASTER" || tierUpper == "CHALLENGER") && !player.HasHitMasterThisSet)
+                    if (isRaceStarted && (tierUpper == "MASTER" || tierUpper == "GRANDMASTER" || tierUpper == "CHALLENGER") && !player.HasHitMasterThisSet)
                     {
                         player.HasHitMasterThisSet = true;
                         player.TimestampHitMaster = DateTime.UtcNow;
@@ -103,8 +104,12 @@ public class RankUpdateWorker : BackgroundService
                 }
             }
 
+            // ALWAYS persist Rank, Tier, Icon, and LP updates to the database
+            await context.SaveChangesAsync(stoppingToken);
+
             // Pause briefly to respect Riot's rate limits
             await Task.Delay(300, stoppingToken); 
+
 
              // 1. Clean up stale matches from previous sets for this player
             var setStartDateTime = DateTimeOffset.FromUnixTimeSeconds(setStartTimestamp).UtcDateTime;
