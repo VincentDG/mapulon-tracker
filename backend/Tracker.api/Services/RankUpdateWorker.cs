@@ -111,8 +111,9 @@ public class RankUpdateWorker : BackgroundService
             await Task.Delay(300, stoppingToken); 
 
 
-             // 1. Clean up stale matches from previous sets for this player
-            var setStartDateTime = DateTimeOffset.FromUnixTimeSeconds(setStartTimestamp).UtcDateTime;
+            // 1. Clean up stale matches from previous sets for this player (buffered by 4 hours)
+            var queryStartTime = Math.Max(0, setStartTimestamp - 14400);
+            var setStartDateTime = DateTimeOffset.FromUnixTimeSeconds(queryStartTime).UtcDateTime;
             var staleMatches = await context.Matches
                 .Where(m => m.PlayerPuuid == player.RiotPuuid && m.MatchEndTime < setStartDateTime)
                 .ToListAsync(stoppingToken);
@@ -122,14 +123,13 @@ public class RankUpdateWorker : BackgroundService
                 await context.SaveChangesAsync(stoppingToken);
                 _logger.LogInformation($"Cleaned up {staleMatches.Count} stale matches from previous sets for {player.DiscordUsername}.");
             }
-
             // 3. Paginate & Sync Match Cache (Singapore/SEA servers use "sea" cluster)
             var matchIds = new List<string>();
             int startOffset = 0;
             const int pageSize = 100;
             while (true)
             {
-                var pageMatchIds = await riotService.GetTftMatchIdsAsync(player.RiotPuuid, setStartTimestamp, startOffset, pageSize, "sea");
+                var pageMatchIds = await riotService.GetTftMatchIdsAsync(player.RiotPuuid, queryStartTime, startOffset, pageSize, "sea");
                 if (pageMatchIds == null || pageMatchIds.Count == 0)
                 {
                     break;
