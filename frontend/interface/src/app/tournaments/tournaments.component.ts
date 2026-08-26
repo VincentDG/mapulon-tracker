@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -56,10 +56,52 @@ export class TournamentsComponent implements OnInit {
     protected readonly isLoadingLeaderboard = signal(true);
     protected readonly activeTab = signal<'details' | 'leaderboard'>('details');
     protected readonly showUpdateForm = signal(false);
-    protected readonly isMenuOpen = signal(false); // Added for mobile navigation toggle
-    protected readonly isRegistrationOpen = signal(true); // Tracks if registration is active
+    protected readonly isMenuOpen = signal(false);
+    protected readonly isRegistrationOpen = signal(true);
     protected readonly isSubmitting = signal(false);
-
+    // Sorting Signals
+    protected readonly sortColumn = signal<'rank' | 'games' | 'avp' | 'masterTime'>('rank');
+    protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
+    // Reactive Sorted Leaderboard
+    protected readonly sortedLeaderboard = computed(() => {
+        const list = [...this.leaderboard()];
+        const col = this.sortColumn();
+        const dir = this.sortDirection();
+        const tierOrder: Record<string, number> = {
+            'CHALLENGER': 9, 'GRANDMASTER': 8, 'MASTER': 7,
+            'DIAMOND': 6, 'EMERALD': 5, 'PLATINUM': 4,
+            'GOLD': 3, 'SILVER': 2, 'BRONZE': 1, 'IRON': 0, 'UNRANKED': -1
+        };
+        const divOrder: Record<string, number> = { 'I': 4, 'II': 3, 'III': 2, 'IV': 1 };
+        return list.sort((a, b) => {
+            let res = 0;
+            if (col === 'rank') {
+                const scoreA = (tierOrder[a.currentTier?.toUpperCase()] ?? -1) * 10000 + (divOrder[a.currentRank?.toUpperCase()] ?? 0) * 1000 + (a.currentLP || 0);
+                const scoreB = (tierOrder[b.currentTier?.toUpperCase()] ?? -1) * 10000 + (divOrder[b.currentRank?.toUpperCase()] ?? 0) * 1000 + (b.currentLP || 0);
+                res = scoreA - scoreB;
+            } else if (col === 'games') {
+                res = a.gamesPlayed - b.gamesPlayed;
+            } else if (col === 'avp') {
+                const avpA = a.hasHitMasterThisSet && a.avpOnHitMaster != null ? a.avpOnHitMaster : (a.gamesPlayed > 0 ? a.avp : 999);
+                const avpB = b.hasHitMasterThisSet && b.avpOnHitMaster != null ? b.avpOnHitMaster : (b.gamesPlayed > 0 ? b.avp : 999);
+                res = avpA - avpB;
+            } else if (col === 'masterTime') {
+                const timeA = a.hasHitMasterThisSet && a.timestampHitMaster ? new Date(a.timestampHitMaster).getTime() : Number.MAX_SAFE_INTEGER;
+                const timeB = b.hasHitMasterThisSet && b.timestampHitMaster ? new Date(b.timestampHitMaster).getTime() : Number.MAX_SAFE_INTEGER;
+                res = timeA - timeB;
+            }
+            return dir === 'asc' ? res : -res;
+        });
+    });
+    toggleSort(column: 'rank' | 'games' | 'avp' | 'masterTime') {
+        if (this.sortColumn() === column) {
+            this.sortDirection.update(d => d === 'asc' ? 'desc' : 'asc');
+        } else {
+            this.sortColumn.set(column);
+            // Default logical directions on first click (lowest AVP and earliest Master is best)
+            this.sortDirection.set(column === 'avp' || column === 'masterTime' ? 'asc' : 'desc');
+        }
+    }
     // Interactive Layout Signals
     protected readonly showInstructions = signal(true);
 
